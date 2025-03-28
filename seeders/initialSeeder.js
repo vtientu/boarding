@@ -42,12 +42,6 @@ const seedDatabase = async () => {
 					view_rooms: true,
 				},
 			},
-			{
-				role_name: "Guest",
-				permissions: {
-					view_rooms: true,
-				},
-			},
 		]);
 
 		// Tạo Owner

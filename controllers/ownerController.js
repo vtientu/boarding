@@ -2,6 +2,7 @@ const Room = require("../models/Room");
 const User = require("../models/User");
 const BoardingHouse = require("../models/BoardingHouse");
 const Bill = require("../models/Bill");
+const Payment = require("../models/Payment");
 const Contract = require("../models/Contract");
 
 exports.manageRooms = async (req, res) => {

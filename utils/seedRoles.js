@@ -21,12 +21,6 @@ const seedRoles = async () => {
 						view_rooms: true,
 					},
 				},
-				{
-					role_name: "Guest",
-					permissions: {
-						view_rooms: true,
-					},
-				},
 			]);
 			console.log("Roles seeded successfully");
 		}

@@ -6,7 +6,7 @@ const RoleSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 			unique: true,
-			enum: ["Owner", "Tenant", "Guest"],
+			enum: ["Owner", "Tenant"],
 		},
 		permissions: {
 			view_rooms: { type: Boolean, default: false },

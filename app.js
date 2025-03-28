@@ -5,16 +5,24 @@ const connectDB = require("./db/connect");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const { initTransporter } = require("./utils/emailService");
+
 const mainRouter = require("./routes/user");
 const ownerRouter = require("./routes/ownerRoutes");
 const tenantRouter = require("./routes/tenantRoutes");
+const boardingHouseRoutes = require("./routes/boardingHouseRoutes");
+const roomRoutes = require("./routes/roomRoutes");
 
 app.use(express.json());
 
 app.use(cors());
-app.use("/user", mainRouter);
-app.use("/owner", ownerRouter);
-app.use("/tenant", tenantRouter);
+initTransporter();
+
+app.use("/users", mainRouter);
+app.use("/owners", ownerRouter);
+app.use("/tenants", tenantRouter);
+app.use("/boardinghouses", boardingHouseRoutes);
+app.use("/rooms", roomRoutes);
 
 const port = process.env.PORT || 3000;
 
