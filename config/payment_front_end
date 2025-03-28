@@ -1,0 +1,321 @@
+.env 
+VNP_TMN_CODE=your_merchant_id  
+VNP_HASH_SECRET=your_secret_key  
+VNP_URL=https://pay.vnpay.vn/vpcpay.html  
+VNP_RETURN_URL=https://yourdomain.com/api/payments/vnpay-return  
+VNP_API_URL=https://merchant.vnpay.vn/merchant_webapi/api/transaction
+
+import React, { useState, useEffect } from 'react';  
+import axios from 'axios';  
+import { useNavigate, useParams } from 'react-router-dom';  
+
+const API_URL = process.env.REACT_APP_API_URL;  
+
+const PaymentPage = () => {  
+  const [bill, setBill] = useState(null);  
+  const [loading, setLoading] = useState(true);  
+  const [error, setError] = useState(null);  
+  const [paymentMethod, setPaymentMethod] = useState('Online Payment');  
+  const { billId } = useParams();  
+  const navigate = useNavigate();  
+
+  useEffect(() => {  
+    // Lấy thông tin hóa đơn  
+    const fetchBill = async () => {  
+      try {  
+        const token = localStorage.getItem('token');  
+        const response = await axios.get(`${API_URL}/api/bills/${billId}`, {  
+          headers: { Authorization: `Bearer ${token}` }  
+        });  
+        setBill(response.data.data);  
+      } catch (err) {  
+        setError(err.response?.data?.message || 'Không thể lấy thông tin hóa đơn');  
+      } finally {  
+        setLoading(false);  
+      }  
+    };  
+
+    fetchBill();  
+  }, [billId]);  
+
+  const handlePayment = async () => {  
+    try {  
+      setLoading(true);  
+      const token = localStorage.getItem('token');  
+      const response = await axios.post(  
+        `${API_URL}/api/payments/create`,  
+        {  
+          billId,  
+          paymentMethod  
+        },  
+        {  
+          headers: { Authorization: `Bearer ${token}` }  
+        }  
+      );  
+
+      if (paymentMethod === 'Online Payment') {  
+        // Chuyển hướng đến trang thanh toán VNPay  
+        window.location.href = response.data.data.paymentUrl;  
+      } else {  
+        // Hiển thị thông tin thanh toán offline  
+        navigate(`/payments/confirmation/${response.data.data._id}`);  
+      }  
+    } catch (err) {  
+      setError(err.response?.data?.message || 'Lỗi khi tạo yêu cầu thanh toán');  
+      setLoading(false);  
+    }  
+  };  
+
+  if (loading) return <div className="text-center mt-5">Đang tải...</div>;  
+  if (error) return <div className="alert alert-danger m-3">{error}</div>;  
+  if (!bill) return <div className="alert alert-warning m-3">Không tìm thấy hóa đơn</div>;  
+
+  // Tính tổng tiền  
+  const totalAmount = bill.room_price + bill.electricity + bill.water + bill.additional_services;  
+
+  return (  
+    <div className="container mt-4">  
+      <h2 className="mb-4">Thanh toán hóa đơn</h2>  
+      
+      <div className="card mb-4">  
+        <div className="card-header">  
+          <h5>Thông tin hóa đơn</h5>  
+        </div>  
+        <div className="card-body">  
+          <div className="row">  
+            <div className="col-md-6">  
+              <p><strong>Phòng:</strong> {bill.room_id.room_name || `Phòng ${bill.room_id.room_number}`}</p>  
+              <p><strong>Tiền phòng:</strong> {bill.room_price.toLocaleString()} VND</p>  
+              <p><strong>Tiền điện:</strong> {bill.electricity.toLocaleString()} VND</p>  
+            </div>  
+            <div className="col-md-6">  
+              <p><strong>Tiền nước:</strong> {bill.water.toLocaleString()} VND</p>  
+              <p><strong>Dịch vụ bổ sung:</strong> {bill.additional_services.toLocaleString()} VND</p>  
+              <p><strong>Hạn thanh toán:</strong> {new Date(bill.payment_deadline).toLocaleDateString()}</p>  
+            </div>  
+          </div>  
+          <hr />  
+          <div className="row">  
+            <div className="col-md-12">  
+              <h4>Tổng tiền: <span className="text-danger">{totalAmount.toLocaleString()} VND</span></h4>  
+            </div>  
+          </div>  
+        </div>  
+      </div>  
+
+      <div className="card mb-4">  
+        <div className="card-header">  
+          <h5>Phương thức thanh toán</h5>  
+        </div>  
+        <div className="card-body">  
+          <div className="form-check mb-3">  
+            <input  
+              className="form-check-input"  
+              type="radio"  
+              name="paymentMethod"  
+              id="onlinePayment"  
+              value="Online Payment"  
+              checked={paymentMethod === 'Online Payment'}  
+              onChange={() => setPaymentMethod('Online Payment')}  
+            />  
+            <label className="form-check-label" htmlFor="onlinePayment">  
+              Thanh toán trực tuyến (VNPay)  
+            </label>  
+          </div>  
+          
+          <div className="form-check mb-3">  
+            <input  
+              className="form-check-input"  
+              type="radio"  
+              name="paymentMethod"  
+              id="bankTransfer"  
+              value="Bank Transfer"  
+              checked={paymentMethod === 'Bank Transfer'}  
+              onChange={() => setPaymentMethod('Bank Transfer')}  
+            />  
+            <label className="form-check-label" htmlFor="bankTransfer">  
+              Chuyển khoản ngân hàng  
+            </label>  
+          </div>  
+          
+          <div className="form-check mb-3">  
+            <input  
+              className="form-check-input"  
+              type="radio"  
+              name="paymentMethod"  
+              id="cash"  
+              value="Cash"  
+              checked={paymentMethod === 'Cash'}  
+              onChange={() => setPaymentMethod('Cash')}  
+            />  
+            <label className="form-check-label" htmlFor="cash">  
+              Tiền mặt  
+            </label>  
+          </div>  
+        </div>  
+      </div>  
+
+      <div className="text-center">  
+        <button  
+          className="btn btn-primary btn-lg"  
+          onClick={handlePayment}  
+          disabled={loading}  
+        >  
+          {loading ? 'Đang xử lý...' : 'Thanh toán ngay'}  
+        </button>  
+      </div>  
+    </div>  
+  );  
+};  
+
+export default PaymentPage;
+
+
+import React, { useState, useEffect } from 'react';  
+import axios from 'axios';  
+import { useParams, useLocation, useNavigate } from 'react-router-dom';  
+
+const API_URL = process.env.REACT_APP_API_URL;  
+
+const PaymentConfirmation = () => {  
+  const [payment, setPayment] = useState(null);  
+  const [loading, setLoading] = useState(true);  
+  const [error, setError] = useState(null);  
+  const { paymentId } = useParams();  
+  const location = useLocation();  
+  const navigate = useNavigate();  
+  
+  // Lấy tham số từ query string  
+  const queryParams = new URLSearchParams(location.search);  
+  const success = queryParams.get('success') === 'true';  
+  const transactionCode = queryParams.get('transactionCode');  
+
+  useEffect(() => {  
+    const fetchPaymentStatus = async () => {  
+      try {  
+        const token = localStorage.getItem('token');  
+
+        // Nếu có mã giao dịch, kiểm tra trạng thái  
+        if (transactionCode) {  
+          const response = await axios.get(  
+            `${API_URL}/api/payments/check/${transactionCode}`,  
+            {  
+              headers: { Authorization: `Bearer ${token}` }  
+            }  
+          );  
+          setPayment(response.data.data.payment);  
+        }   
+        // Nếu có ID thanh toán, lấy thông tin thanh toán  
+        else if (paymentId) {  
+          const response = await axios.get(  
+            `${API_URL}/api/payments/${paymentId}`,  
+            {  
+              headers: { Authorization: `Bearer ${token}` }  
+            }  
+          );  
+          setPayment(response.data.data);  
+        }  
+      } catch (err) {  
+        setError(err.response?.data?.message || 'Không thể lấy thông tin thanh toán');  
+      } finally {  
+        setLoading(false);  
+      }  
+    };  
+
+    fetchPaymentStatus();  
+  }, [paymentId, transactionCode]);  
+
+  if (loading) return <div className="text-center my-5">Đang kiểm tra thanh toán...</div>;  
+  if (error) return <div className="alert alert-danger m-3">{error}</div>;  
+  if (!payment) return <div className="alert alert-warning m-3">Không tìm thấy thông tin thanh toán</div>;  
+
+  return (  
+    <div className="container mt-5">  
+      <div className="card shadow-sm">  
+        <div className={`card-header text-white ${payment.payment_status === 'Completed' ? 'bg-success' : payment.payment_status === 'Failed' ? 'bg-danger' : 'bg-warning'}`}>  
+          <h3 className="mb-0">  
+            {payment.payment_status === 'Completed' && 'Thanh toán thành công'}  
+            {payment.payment_status === 'Failed' && 'Thanh toán thất bại'}  
+            {payment.payment_status === 'Pending' && 'Đang chờ xử lý thanh toán'}  
+          </h3>  
+        </div>  
+        <div className="card-body">  
+          <div className="row mb-4">  
+            <div className="col-md-6">  
+              <h5>Thông tin thanh toán</h5>  
+              <p><strong>Mã giao dịch:</strong> {payment.transaction_code}</p>  
+              <p><strong>Phương thức:</strong> {payment.payment_method}</p>  
+              <p><strong>Số tiền:</strong> {payment.total_amount.toLocaleString()} VND</p>  
+              <p><strong>Trạng thái:</strong>   
+                <span className={`badge ${payment.payment_status === 'Completed' ? 'bg-success' : payment.payment_status === 'Failed' ? 'bg-danger' : 'bg-warning'} ms-2`}>  
+                  {payment.payment_status === 'Completed' && 'Đã thanh toán'}  
+                  {payment.payment_status === 'Failed' && 'Thất bại'}  
+                  {payment.payment_status === 'Pending' && 'Đang xử lý'}  
+                </span>  
+              </p>  
+              {payment.payment_date && (  
+                <p><strong>Ngày thanh toán:</strong> {new Date(payment.payment_date).toLocaleString()}</p>  
+              )}  
+            </div>  
+            
+            <div className="col-md-6">  
+              <h5>Thông tin hóa đơn</h5>  
+              {payment.bill_id && (  
+                <>  
+                  <p><strong>Phòng:</strong> {payment.bill_id.room_id.room_name || `Phòng ${payment.bill_id.room_id.room_number}`}</p>  
+                  <p><strong>Tiền phòng:</strong> {payment.bill_id.room_price.toLocaleString()} VND</p>  
+                  <p><strong>Hạn thanh toán:</strong> {new Date(payment.bill_id.payment_deadline).toLocaleDateString()}</p>  
+                </>  
+              )}  
+            </div>  
+          </div>  
+
+          {payment.payment_status === 'Pending' && payment.payment_method === 'Bank Transfer' && (  
+            <div className="alert alert-info mb-4">  
+              <h5>Hướng dẫn chuyển khoản</h5>  
+              <p>Vui lòng chuyển khoản với nội dung sau:</p>  
+              <p className="fw-bold">{payment.transaction_code} - {payment.user_id?.name}</p>  
+              <p>Thông tin tài khoản:</p>  
+              <ul>  
+                <li>Ngân hàng: BIDV</li>  
+                <li>Số tài khoản: 12345678900</li>  
+                <li>Chủ tài khoản: CÔNG TY ABC</li>  
+              </ul>  
+              <p>Sau khi chuyển khoản, vui lòng đợi hệ thống xác nhận (trong vòng 24h làm việc).</p>  
+            </div>  
+          )}  
+
+          {payment.payment_status === 'Pending' && payment.payment_method === 'Cash' && (  
+            <div className="alert alert-info mb-4">  
+              <h5>Hướng dẫn thanh toán tiền mặt</h5>  
+              <p>Vui lòng đến văn phòng quản lý để thanh toán tiền mặt với mã giao dịch:</p>  
+              <p className="fw-bold">{payment.transaction_code}</p>  
+              <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>  
+              <p>Thời gian làm việc: 8:00 - 17:00 (Thứ Hai - Thứ Sáu)</p>  
+            </div>  
+          )}  
+
+          <div className="text-center mt-4">  
+            {payment.payment_status === 'Completed' && (  
+              <button className="btn btn-primary me-3" onClick={() => navigate('/dashboard')}>  
+                Về trang chủ  
+              </button>  
+            )}  
+            
+            {payment.payment_status === 'Failed' && (  
+              <button className="btn btn-primary me-3" onClick={() => navigate(`/bills/${payment.bill_id._id}/payment`)}>  
+                Thử lại  
+              </button>  
+            )}  
+            
+            <button className="btn btn-outline-secondary" onClick={() => navigate('/bills')}>  
+              Xem danh sách hóa đơn  
+            </button>  
+          </div>  
+        </div>  
+      </div>  
+    </div>  
+  );  
+};  
+
+export default PaymentConfirmation;

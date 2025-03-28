@@ -1,0 +1,225 @@
+// Client-side code example (React with Socket.IO-client)  
+import { useEffect, useState } from 'react';  
+import io from 'socket.io-client';  
+
+const API_URL = 'http://localhost:5000';  
+let socket;  
+
+function ChatComponent() {  
+  const [connected, setConnected] = useState(false);  
+  const [conversations, setConversations] = useState([]);  
+  const [currentChat, setCurrentChat] = useState(null);  
+  const [messages, setMessages] = useState([]);  
+  const [newMessage, setNewMessage] = useState('');  
+  const token = localStorage.getItem('token');  
+
+  // Kết nối Socket.IO  
+  useEffect(() => {  
+    // Khởi tạo kết nối socket với token xác thực  
+    socket = io(API_URL, {  
+      auth: { token }  
+    });  
+
+    // Xử lý sự kiện kết nối  
+    socket.on('connect', () => {  
+      console.log('Connected to server');  
+      setConnected(true);  
+      
+      // Lấy danh sách cuộc trò chuyện  
+      socket.emit('get_conversations', (response) => {  
+        if (response.status === 'success') {  
+          setConversations(response.data);  
+        }  
+      });  
+    });  
+
+    // Xử lý sự kiện nhận tin nhắn  
+    socket.on('receive_message', (message) => {  
+      if (currentChat && currentChat.room_id === message.chat_room_id) {  
+        setMessages((prev) => [...prev, message]);  
+        
+        // Đánh dấu tin nhắn đã đọc nếu đang trong cuộc trò chuyện  
+        socket.emit('mark_as_read', { room_id: message.chat_room_id });  
+      } else {  
+        // Cập nhật danh sách cuộc trò chuyện nếu không đang trong cuộc trò chuyện  
+        socket.emit('get_conversations', (response) => {  
+          if (response.status === 'success') {  
+            setConversations(response.data);  
+          }  
+        });  
+      }  
+    });  
+
+    // Xử lý sự kiện thông báo tin nhắn mới  
+    socket.on('new_message_notification', (data) => {  
+      // Hiển thị thông báo  
+      if (Notification.permission === 'granted') {  
+        new Notification(`Tin nhắn mới từ ${data.sender.name}`, {  
+          body: data.message.message_content  
+        });  
+      }  
+
+      // Cập nhật danh sách cuộc trò chuyện  
+      socket.emit('get_conversations', (response) => {  
+        if (response.status === 'success') {  
+          setConversations(response.data);  
+        }  
+      });  
+    });  
+
+    // Xử lý sự kiện tin nhắn đã đọc  
+    socket.on('messages_read', ({ room_id }) => {  
+      if (currentChat && currentChat.room_id === room_id) {  
+        // Cập nhật trạng thái đã đọc cho tin nhắn  
+        setMessages((prev) =>   
+          prev.map(msg => ({  
+            ...msg,  
+            is_read: true  
+          }))  
+        );  
+      }  
+    });  
+
+    // Xử lý sự kiện trạng thái người dùng  
+    socket.on('user_status', (data) => {  
+      // Cập nhật trạng thái online/offline của người dùng trong danh sách  
+      setConversations((prev) =>   
+        prev.map(conv =>   
+          conv.contact._id === data.user_id   
+            ? { ...conv, contact: { ...conv.contact, online: data.status === 'online' } }  
+            : conv  
+        )  
+      );  
+    });  
+
+    // Xử lý ngắt kết nối  
+    socket.on('disconnect', () => {  
+      console.log('Disconnected from server');  
+      setConnected(false);  
+    });  
+
+    // Dọn dẹp khi component unmount  
+    return () => {  
+      socket.disconnect();  
+    };  
+  }, [token, currentChat]);  
+
+  // Khi chọn một cuộc trò chuyện  
+  const selectConversation = (conversation) => {  
+    setCurrentChat(conversation);  
+    
+    // Tham gia phòng chat  
+    socket.emit('join_room', conversation.contact._id);  
+    
+    // Lấy lịch sử tin nhắn  
+    socket.emit('get_messages',   
+      { receiver_id: conversation.contact._id, page: 1, limit: 20 },   
+      (response) => {  
+        if (response.status === 'success') {  
+          setMessages(response.data.messages);  
+        }  
+      }  
+    );  
+    
+    // Đánh dấu tin nhắn đã đọc  
+    socket.emit('mark_as_read', { room_id: conversation.room_id });  
+  };  
+
+  // Gửi tin nhắn  
+  const sendMessage = () => {  
+    if (!newMessage.trim() || !currentChat) return;  
+    
+    socket.emit('send_message',   
+      {  
+        receiver_id: currentChat.contact._id,  
+        message_content: newMessage,  
+        message_type: 'Text'  
+      },  
+      (response) => {  
+        if (response.status === 'success') {  
+          // Reset input  
+          setNewMessage('');  
+        } else {  
+          // Hiển thị lỗi  
+          console.error('Error sending message:', response.message);  
+        }  
+      }  
+    );  
+  };  
+
+  return (  
+    <div className="chat-container">  
+      {/* UI cho danh sách cuộc trò chuyện */}  
+      <div className="conversations-list">  
+        <h2>Cuộc trò chuyện</h2>  
+        {conversations.map(conv => (  
+          <div   
+            key={conv.room_id}   
+            className={`conversation-item ${currentChat?.room_id === conv.room_id ? 'active' : ''}`}  
+            onClick={() => selectConversation(conv)}  
+          >  
+            <div className="user-info">  
+              <span className={`status ${conv.contact.online ? 'online' : 'offline'}`}></span>  
+              <h3>{conv.contact.name}</h3>  
+              <p>{conv.contact.role}</p>  
+            </div>  
+            <div className="preview">  
+              <p>{conv.last_message.content}</p>  
+              {conv.unread_count > 0 && (  
+                <span className="badge">{conv.unread_count}</span>  
+              )}  
+            </div>  
+          </div>  
+        ))}  
+      </div>  
+
+      {/* UI cho cuộc trò chuyện hiện tại */}  
+      {currentChat ? (  
+        <div className="chat-box">  
+          <div className="chat-header">  
+            <h2>{currentChat.contact.name}</h2>  
+            <span className={`status ${currentChat.contact.online ? 'online' : 'offline'}`}>  
+              {currentChat.contact.online ? 'Online' : 'Offline'}  
+            </span>  
+          </div>  
+          
+          <div className="messages-container">  
+            {messages.map(msg => (  
+              <div   
+                key={msg._id}   
+                className={`message ${msg.sender_id._id === currentChat.contact._id ? 'received' : 'sent'}`}  
+              >  
+                <div className="message-content">  
+                  {msg.message_content}  
+                </div>  
+                <div className="message-meta">  
+                  <span className="time">{new Date(msg.createdAt).toLocaleTimeString()}</span>  
+                  {msg.sender_id._id !== currentChat.contact._id && (  
+                    <span className="status">{msg.is_read ? '✓✓' : '✓'}</span>  
+                  )}  
+                </div>  
+              </div>  
+            ))}  
+          </div>  
+          
+          <div className="message-input">  
+            <input   
+              type="text"   
+              value={newMessage}   
+              onChange={(e) => setNewMessage(e.target.value)}  
+              placeholder="Nhập tin nhắn..."  
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}  
+            />  
+            <button onClick={sendMessage}>Gửi</button>  
+          </div>  
+        </div>  
+      ) : (  
+        <div className="no-chat-selected">  
+          <p>Chọn một cuộc trò chuyện để bắt đầu</p>  
+        </div>  
+      )}  
+    </div>  
+  );  
+}  
+
+export default ChatComponent;
