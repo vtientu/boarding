@@ -1,11 +1,11 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import {
-	Dashboard,
-	HomeLayout,
-	Landing,
-	Login,
-	Logout,
-	Register,
+  Dashboard,
+  HomeLayout,
+  Landing,
+  Login,
+  Logout,
+  Register,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
 import RoomManagement from "./pages/admin/RoomManagement";
@@ -14,77 +14,87 @@ import TenantManagement from "./pages/admin/TenantManagement";
 import BoardingHouseManagement from "./pages/admin/BoardingHouseManagement";
 import UserDashboard from "./pages/tenant/UserDashboard";
 import UserProfile from "./components/UserProfile";
+import Chat from "./pages/client/Chat";
+import ChatDetails from "./pages/client/ChatDetails";
 import Payment from "./pages/tenant/Payment";
 import ChangePassword from "./pages/tenant/ChangePassword";
 
 const router = createBrowserRouter([
-	{
-		path: "/",
-		element: <HomeLayout />,
-		children: [
-			{
-				index: true,
-				element: <Landing />,
-			},
-			{
-				path: "login",
-				element: <Login />,
-			},
-			{
-				path: "register",
-				element: <Register />,
-			},
-			{
-				path: "dashboard",
-				element: <Dashboard />,
-			},
-			{
-				path: "user-dashboard",
-				element: <UserDashboard />,
-			},
-			{
-				path: "profile",
-				element: <UserProfile />,
-			},
+  {
+    path: "/",
+    element: <HomeLayout />,
+    children: [
+      {
+        index: true,
+        element: <Landing />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "register",
+        element: <Register />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "user-dashboard",
+        element: <UserDashboard />,
+      },
+      {
+        path: "profile",
+        element: <UserProfile />,
+      },
 			{
 				path: "tenant/change-password",
 				element: <ChangePassword />,
 			},
-			{
-				path: "boarding-houses",
-				element: <BoardingHouseManagement />,
-			},
-			{
-				path: "rooms",
-				element: <RoomManagement />,
-			},
-			{
-				path: "bills",
-				element: <BillManagement />,
-			},
-			{
-				path: "tenants",
-				element: <TenantManagement />,
-			},
+      {
+        path: "boarding-houses",
+        element: <BoardingHouseManagement />,
+      },
+      {
+        path: "rooms",
+        element: <RoomManagement />,
+      },
+      {
+        path: "bills",
+        element: <BillManagement />,
+      },
+      {
+        path: "tenants",
+        element: <TenantManagement />,
+      },
 			{
 				path: "payment",
 				element: <Payment />,
 			},
-			{
-				path: "logout",
-				element: <Logout />,
-			},
-		],
-	},
+      {
+        path: "logout",
+        element: <Logout />,
+      },
+      {
+        path: "chat",
+        element: <Chat />,
+      },
+      {
+        path: "chat/:id",
+        element: <ChatDetails />,
+      },
+    ],
+  },
 ]);
 
 function App() {
-	return (
-		<>
-			<RouterProvider router={router} />
-			<ToastContainer position="top-center" />
-		</>
-	);
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer position="top-center" />
+    </>
+  );
 }
 
 export default App;

@@ -65,6 +65,7 @@ const getAllRooms = async (req, res) => {
 		const rooms = await Room.find(query)
 			.populate("boarding_house_id", "location status")
 			.populate("landlord_id", "name username email phone")
+			.populate("tenant_id", "name")
 			.sort(sortOption)
 			.skip(skip)
 			.limit(parseInt(limit));
@@ -379,6 +380,7 @@ const searchRooms = async (req, res) => {
 		const rooms = await Room.find(query)
 			.populate("boarding_house_id", "location status")
 			.populate("landlord_id", "name username email phone")
+			.populate("tenant_id", "name")
 			.skip(skip)
 			.limit(parseInt(limit))
 			.sort({ createdAt: -1 });
