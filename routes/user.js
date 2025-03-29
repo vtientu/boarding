@@ -10,6 +10,8 @@ const {
 	resetPassword,
 	getUserById,
 	getUserList,
+	updateUser,
+	deleteUser,
 } = require("../controllers/user");
 const authMiddleware = require("../middleware/auth");
 
@@ -21,5 +23,7 @@ router.route("/forgot-password").post(forgotPassword); // OKE
 router.route("/reset-password/:token").post(resetPassword); // OKE
 router.get("/:userId", authMiddleware, getUserById);
 router.get("/", authMiddleware, getUserList);
+router.put("/:userId", authMiddleware, updateUser);
+router.delete("/:userId", authMiddleware, deleteUser);
 
 module.exports = router;
