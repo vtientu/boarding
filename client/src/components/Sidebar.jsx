@@ -17,9 +17,9 @@ const Sidebar = () => {
 					Trang chủ
 				</Link>
 				<Link
-					to="/boardinghouses"
+					to="/boarding-houses"
 					className={`nav-item ${
-						location.pathname === "/boardinghouses" ? "active" : ""
+						location.pathname === "/boarding-houses" ? "active" : ""
 					}`}
 				>
 					QL Nhà trọ

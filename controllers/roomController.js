@@ -141,11 +141,6 @@ const createRoom = async (req, res) => {
 			return res.status(404).json({ msg: "Boarding house not found" });
 		}
 
-		if (boardingHouse.landlord_id.toString() !== userId) {
-			return res.status(403).json({
-				msg: "Permission denied. You are not the owner of this boarding house",
-			});
-		}
 
 		// Tạo phòng mới
 		const newRoom = new Room({
@@ -159,8 +154,10 @@ const createRoom = async (req, res) => {
 			landlord_id: userId,
 			boarding_house_id,
 		});
+console.log('point 1');
 
 		await newRoom.save();
+		console.log("point 2");
 
 		// Cập nhật số phòng trống trong boarding house
 		if (status === "Available") {
@@ -172,7 +169,7 @@ const createRoom = async (req, res) => {
 				$inc: { occupied_rooms: 1 },
 			});
 		}
-
+		console.log("point 3");
 		res.status(201).json({ msg: "Room created successfully", room: newRoom });
 	} catch (error) {
 		console.error("Error creating room:", error);
@@ -518,6 +515,26 @@ const getOwnerRooms = async (req, res) => {
 	}
 };
 
+// Lấy danh sách phòng theo boarding house ID
+const getRoomsByBoardingHouse = async (req, res) => {
+	try {
+		const { boarding_house_id } = req.params;
+
+		if (!mongoose.Types.ObjectId.isValid(boarding_house_id)) {
+			return res.status(400).json({ msg: "Invalid boarding house ID" });
+		}
+
+		const rooms = await Room.find({ boarding_house_id })
+			.populate("tenant_id", "name phone email")
+			.sort({ room_number: 1 });
+
+		res.status(200).json({ rooms });
+	} catch (error) {
+		console.error("Error getting rooms by boarding house:", error);
+		res.status(500).json({ msg: "Server error", error: error.message });
+	}
+};
+
 module.exports = {
 	getAllRooms,
 	getRoomDetail,
@@ -526,4 +543,5 @@ module.exports = {
 	deleteRoom,
 	searchRooms,
 	getOwnerRooms,
+	getRoomsByBoardingHouse,
 };

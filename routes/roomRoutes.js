@@ -8,6 +8,7 @@ const {
 	deleteRoom,
 	searchRooms,
 	getOwnerRooms,
+	getRoomsByBoardingHouse,
 } = require("../controllers/roomController");
 const authMiddleware = require("../middleware/auth");
 
@@ -20,6 +21,9 @@ router.get("/owner", authMiddleware, getOwnerRooms); // done
 
 // Lấy chi tiết phòng (public)
 router.get("/detail/:id", getRoomDetail); //done
+
+// Lấy danh sách phòng theo boarding house ID
+router.get("/boardinghouse/:boarding_house_id", getRoomsByBoardingHouse); //done
 
 // Các route cần đăng nhập
 router.post("/create/", authMiddleware, createRoom); //done

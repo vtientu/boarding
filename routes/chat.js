@@ -8,30 +8,6 @@ const mongoose = require("mongoose");
 // Middleware xác thực cho tất cả các routes
 router.use(authMiddleware);
 
-// gửi tin nhắn
-router.post("/send", async (req, res) => {
-	const { receiverId, message } = req.body;
-	const userId = req.user.id;
-
-	const participants = [userId, receiverId].sort();
-	const chat_room_id = `chat_${participants[0]}_${participants[1]}`;
-
-	const newChat = new ChatMessage({
-		sender_id: userId,
-		receiver_id: receiverId,
-		chat_room_id,
-		message_content: message,
-		message_type: "text",
-	});
-
-	await newChat.save();
-
-	res.status(201).json({
-		message: "Message sent successfully",
-		chat_room_id,
-	});
-});
-
 // Lấy tất cả cuộc trò chuyện của người dùng hiện tại
 router.get("/conversations", async (req, res) => {
 	try {

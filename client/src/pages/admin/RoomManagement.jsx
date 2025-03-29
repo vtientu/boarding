@@ -234,7 +234,7 @@ const RoomManagement = () => {
                         <tr key={room._id}>
                           <td>{room.room_number}</td>
                           <td>{room.room_type}</td>
-                          <td>{formatCurrency(room.rent_price)}</td>
+                          <td>{formatCurrency(room.month_rent)}</td>
                           <td>{room.capacity}</td>
                           <td>
                             <span
