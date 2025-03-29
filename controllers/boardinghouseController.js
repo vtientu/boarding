@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 // Lấy tất cả nhà trọ
 const getAllBoardingHouses = async (req, res) => {
 	try {
-		const { location, status, sort, page = 1, limit = 10 } = req.query;
+		const { location, status, sort } = req.query;
 		const query = {};
 
 		// Filter theo location
@@ -24,8 +24,6 @@ const getAllBoardingHouses = async (req, res) => {
 
 		// Pagination
 		const options = {
-			page: parseInt(page),
-			limit: parseInt(limit),
 			sort: {},
 		};
 
@@ -42,11 +40,8 @@ const getAllBoardingHouses = async (req, res) => {
 		}
 
 		// Thực hiện query với pagination
-		const skip = (page - 1) * limit;
 		const boardingHouses = await BoardingHouse.find(query)
 			.sort(options.sort)
-			.skip(skip)
-			.limit(limit);
 
 		// Cập nhật thống kê cho từng nhà trọ
 		const boardingHousesWithStats = await Promise.all(
@@ -59,16 +54,19 @@ const getAllBoardingHouses = async (req, res) => {
 			})
 		);
 
-		const total = await BoardingHouse.countDocuments(query);
+		const totalStats = boardingHousesWithStats.reduce((acc, house) => {
+			acc.total_income += house.total_income;
+			acc.empty_rooms += house.empty_rooms;
+			acc.occupied_rooms += house.occupied_rooms;
+			return acc;
+		}, { total_income: 0, empty_rooms: 0, occupied_rooms: 0 });
+
+		// Thêm tổng số phòng
+		totalStats.total_rooms = totalStats.empty_rooms + totalStats.occupied_rooms;
 
 		res.status(200).json({
-			data: boardingHousesWithStats,
-			pagination: {
-				total,
-				page: options.page,
-				limit: options.limit,
-				pages: Math.ceil(total / limit),
-			},
+			totalStats,
+			boardingHouses: boardingHousesWithStats,
 		});
 	} catch (error) {
 		console.error("Error getting boarding houses:", error);

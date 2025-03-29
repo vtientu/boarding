@@ -29,7 +29,6 @@ const calculateTotalIncome = async (boardingHouseId) => {
 const calculateRoomStats = async (boardingHouseId) => {
     try {
         const rooms = await Room.find({ boarding_house_id: boardingHouseId });
-        
         const stats = rooms.reduce((acc, room) => {
             if (room.status === "Available") {
                 acc.empty_rooms++;

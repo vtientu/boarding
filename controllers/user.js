@@ -8,6 +8,7 @@ const {
 	sendPasswordResetEmail,
 	sendWelcomeEmail,
 } = require("../utils/emailService");
+const { isValidObjectId } = require("mongoose");
 
 const login = async (req, res) => {
 	const { email, password } = req.body;
@@ -298,13 +299,13 @@ const forgotPassword = async (req, res) => {
 			"host"
 		)}/api/auth/reset-password/${resetToken}`;
 
-	// 	// Nội dung email
-	// 	const message = `  
-    //   Bạn đã yêu cầu đặt lại mật khẩu.   
-    //   Vui lòng truy cập đường dẫn sau để đặt lại mật khẩu của bạn: ${resetURL}  
-    //   Đường dẫn này sẽ hết hạn sau 10 phút.  
-    //   Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
-    // `;
+		// 	// Nội dung email
+		// 	const message = `  
+		//   Bạn đã yêu cầu đặt lại mật khẩu.   
+		//   Vui lòng truy cập đường dẫn sau để đặt lại mật khẩu của bạn: ${resetURL}  
+		//   Đường dẫn này sẽ hết hạn sau 10 phút.  
+		//   Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
+		// `;
 
 		// // Sử dụng service để gửi email
 		await sendPasswordResetEmail(user.email, user.name, resetURL);
@@ -392,6 +393,65 @@ const resetPassword = async (req, res) => {
 	}
 };
 
+const getUserList = async (req, res) => {
+	const { page = 1, limit = 10, role, search } = req.query;
+
+	const skip = (page - 1) * limit;
+
+	const query = {};
+
+	if (role) {
+		query.role = role;
+	}
+
+	if (search) {
+		query.$or = [
+			{ name: { $regex: search, $options: "i" } },
+			{ username: { $regex: search, $options: "i" } },
+			{ email: { $regex: search, $options: "i" } },
+		];
+	}
+
+	const users = await User.find(query)
+		.select("-password")
+		.skip(skip)
+		.limit(limit);
+
+	const total = await User.countDocuments(query);
+
+	const pagination = {
+		total,
+		page: parseInt(page),
+		limit: parseInt(limit),
+	};
+
+	res.status(200).json({ users, pagination });
+}
+
+const getUserById = async (req, res) => {
+	const { userId } = req.params;
+
+	if (!isValidObjectId(userId)) {
+		return res.status(400).json({ message: "Invalid user ID" });
+	}
+
+	const user = await User.findById(userId).select("-password");
+
+	if (!user) {
+		return res.status(404).json({ message: "User not found" });
+	}
+
+
+	const userRole = await Role.findById(user.role_id);
+	if (!userRole || userRole.role_name !== "Owner") {
+		return res.status(403).json({
+			msg: "Permission denied. Only owners can access this resource",
+		});
+	}
+
+	res.status(200).json({ message: "User fetched successfully", user });
+};
+
 module.exports = {
 	login,
 	registerOwner,
@@ -399,4 +459,6 @@ module.exports = {
 	changePassword,
 	forgotPassword,
 	resetPassword,
+	getUserById,
+	getUserList
 };

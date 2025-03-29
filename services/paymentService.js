@@ -82,7 +82,6 @@ class PaymentService {
 				vnp_Locale: "vn",
 				vnp_CreateDate: moment().format("YYYYMMDDHHmmss"),
 				vnp_CurrCode: "VND",
-
 			};
 
 			const paymentUrl = this.vnpay.buildPaymentUrl(vnp_Params)
