@@ -212,11 +212,6 @@ const updateRoom = async (req, res) => {
 		}
 
 		// Chỉ chủ trọ mới có thể cập nhật
-		if (room.landlord_id.toString() !== userId) {
-			return res
-				.status(403)
-				.json({ msg: "Permission denied. You are not the owner of this room" });
-		}
 
 		// Lưu lại status cũ để cập nhật số lượng phòng trong boarding house
 		const oldStatus = room.status;
@@ -286,13 +281,6 @@ const deleteRoom = async (req, res) => {
 		const room = await Room.findById(id);
 		if (!room) {
 			return res.status(404).json({ msg: "Room not found" });
-		}
-
-		// Chỉ chủ trọ mới có thể xóa
-		if (room.landlord_id.toString() !== userId) {
-			return res
-				.status(403)
-				.json({ msg: "Permission denied. You are not the owner of this room" });
 		}
 
 		// Cập nhật số phòng trong boarding house

@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import AddRoomModal from "../../components/AddRoomModal";
+import EditRoomModal from "../../components/EditRoomModal";
 import SearchFilter from "../../components/SearchFilter";
 import "../../styles/RoomManagement.css";
 import axios from "axios";
 
 const RoomManagement = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,12 +51,10 @@ const RoomManagement = () => {
         },
       });
 
-      // Set rooms data
       if (response.data.data) {
         setRooms(response.data.data);
       }
 
-      // Set pagination data with fallback values
       if (response.data.pagination) {
         setPagination({
           page: response.data.pagination.page || 1,
@@ -61,7 +64,6 @@ const RoomManagement = () => {
         });
       }
 
-      // Set stats data
       if (response.data.stats) {
         setStats({
           totalRooms: response.data.stats.totalRooms || 0,
@@ -73,7 +75,6 @@ const RoomManagement = () => {
       }
     } catch (err) {
       setError(err.response?.data?.msg || "Có lỗi xảy ra khi tải dữ liệu");
-      // Reset pagination to default values on error
       setPagination({
         page: 1,
         limit: 10,
@@ -89,13 +90,19 @@ const RoomManagement = () => {
     fetchRooms();
   }, [pagination.page, filterStatus, searchTerm]);
 
-  useEffect(() => {
-    console.log(rooms);
-  }, [rooms]);
-
   const handleAddRoom = async (roomData) => {
     try {
-      await axios.post("/api/rooms", roomData);
+      const token = JSON.parse(localStorage.getItem("auth"));
+      if (!token) {
+        setError("Vui lòng đăng nhập để thực hiện thao tác này");
+        return;
+      }
+
+      await axios.post("http://localhost:3000/rooms", roomData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       fetchRooms();
       setIsModalOpen(false);
     } catch (err) {
@@ -103,23 +110,55 @@ const RoomManagement = () => {
     }
   };
 
+  const handleEditRoom = async (roomId) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/rooms/detail/${roomId}`);
+      setSelectedRoom(response.data.room);
+      setIsEditModalOpen(true);
+    } catch (err) {
+      setError(err.response?.data?.msg || "Có lỗi xảy ra khi tải thông tin phòng");
+    }
+  };
+
+  const handleUpdateRoom = async (updatedData) => {
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"));
+      if (!token) {
+        setError("Vui lòng đăng nhập để thực hiện thao tác này");
+        return;
+      }
+
+      await axios.patch(`http://localhost:3000/rooms/update/${selectedRoom._id}`, updatedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchRooms();
+      setIsEditModalOpen(false);
+      setSelectedRoom(null);
+    } catch (err) {
+      setError(err.response?.data?.msg || "Có lỗi xảy ra khi cập nhật phòng");
+    }
+  };
+
   const handleDeleteRoom = async (roomId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa phòng này?")) {
       try {
-        await axios.delete(`/api/rooms/${roomId}`);
+        const token = JSON.parse(localStorage.getItem("auth"));
+        if (!token) {
+          setError("Vui lòng đăng nhập để thực hiện thao tác này");
+          return;
+        }
+
+        await axios.delete(`http://localhost:3000/rooms/${roomId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         fetchRooms();
       } catch (err) {
         setError(err.response?.data?.msg || "Có lỗi xảy ra khi xóa phòng");
       }
-    }
-  };
-
-  const handleEditRoom = async (roomId, updatedData) => {
-    try {
-      await axios.patch(`/api/rooms/update/${roomId}`, updatedData);
-      fetchRooms();
-    } catch (err) {
-      setError(err.response?.data?.msg || "Có lỗi xảy ra khi cập nhật phòng");
     }
   };
 
@@ -153,6 +192,16 @@ const RoomManagement = () => {
               onSubmit={handleAddRoom}
             />
 
+            <EditRoomModal
+              isOpen={isEditModalOpen}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedRoom(null);
+              }}
+              onSubmit={handleUpdateRoom}
+              room={selectedRoom}
+            />
+
             <SearchFilter
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -168,85 +217,61 @@ const RoomManagement = () => {
               {loading ? (
                 <div className="loading">Đang tải...</div>
               ) : (
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Số phòng</th>
-                      <th>Loại phòng</th>
-                      <th>Giá thuê</th>
-                      <th>Số người</th>
-                      <th>Địa chỉ</th>
-                      <th>Mô tả</th>
-                      <th>Nhà trọ</th>
-                      <th>Tên người thuê</th>
-                      <th>Trạng thái</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rooms.map((room) => (
-                      <tr key={room._id}>
-                        <td>{room.room_number}</td>
-                        <td>{room.room_type}</td>
-                        <td>{formatCurrency(room.month_rent)}</td>
-                        <td>{room.capacity}</td>
-                        <td>{room.address || "-"}</td>
-                        <td>{room.description || "-"}</td>
-                        <td>{room.boarding_house_id?.location || "-"}</td>
-                        <td>
-                          {room.contract ? (
-                            <div className="tenant-info">
-                              <div className="tenant-name">{room.contract.user_id.name}</div>
-                              <div className="tenant-contact">
-                                <span className="tenant-phone">{room.contract.user_id.phone}</span>
-                                <span className="tenant-email">{room.contract.user_id.email}</span>
-                              </div>
-                              <div className="contract-dates">
-                                <span>Bắt đầu: {new Date(room.contract.start_date).toLocaleDateString('vi-VN')}</span>
-                                <span>Kết thúc: {new Date(room.contract.end_date).toLocaleDateString('vi-VN')}</span>
-                              </div>
-                            </div>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                        <td>
-                          <span
-                            className={`status-badge ${
-                              room.status === "Occupied"
-                                ? "occupied"
-                                : room.status === "Available"
-                                ? "vacant"
-                                : "maintenance"
-                            }`}
-                          >
-                            {room.status === "Occupied"
-                              ? "Đã thuê"
-                              : room.status === "Available"
-                              ? "Trống"
-                              : "Đang sửa"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="edit-btn"
-                              onClick={() => handleEditRoom(room._id)}
-                            >
-                              Sửa
-                            </button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => handleDeleteRoom(room._id)}
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        </td>
+                <div className="rooms-table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Số phòng</th>
+                        <th>Loại phòng</th>
+                        <th>Giá thuê</th>
+                        <th>Sức chứa</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {rooms.map((room) => (
+                        <tr key={room._id}>
+                          <td>{room.room_number}</td>
+                          <td>{room.room_type}</td>
+                          <td>{formatCurrency(room.rent_price)}</td>
+                          <td>{room.capacity}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${
+                                room.status === "Available" ? "available" : "occupied"
+                              }`}
+                            >
+                              {room.status === "Available" ? "Còn trống" : "Đã thuê"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                className="view-btn"
+                                onClick={() => navigate(`/rooms/${room._id}`)}
+                              >
+                                Chi tiết
+                              </button>
+                              <button
+                                className="edit-btn"
+                                onClick={() => handleEditRoom(room._id)}
+                              >
+                                Sửa
+                              </button>
+                              <button
+                                className="delete-btn"
+                                onClick={() => handleDeleteRoom(room._id)}
+                              >
+                                Xóa
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 

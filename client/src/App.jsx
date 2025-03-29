@@ -14,7 +14,8 @@ import TenantManagement from "./pages/admin/TenantManagement";
 import BoardingHouseManagement from "./pages/admin/BoardingHouseManagement";
 import UserDashboard from "./pages/tenant/UserDashboard";
 import UserProfile from "./components/UserProfile";
-
+import RoomDetail from "./pages/admin/RoomDetail";
+import BoardingHouseDetail from "./pages/admin/BoardingHouseDetail";
 const router = createBrowserRouter([
 	{
 		path: "/",
@@ -49,8 +50,16 @@ const router = createBrowserRouter([
 				element: <BoardingHouseManagement />,
 			},
 			{
+				path: "boardinghouses/:id",
+				element: <BoardingHouseDetail />,
+			},
+			{
 				path: "rooms",
 				element: <RoomManagement />,
+			},
+			{
+				path: "rooms/:id",
+				element: <RoomDetail />,
 			},
 			{
 				path: "bills",
