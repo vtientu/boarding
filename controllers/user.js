@@ -1,79 +1,5 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-<<<<<<< HEAD
-
-const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({
-      msg: "Bad request. Please add email and password in the request body",
-    });
-  }
-
-  let foundUser = await User.findOne({ email: req.body.email });
-  if (foundUser) {
-    const isMatch = await foundUser.comparePassword(password);
-
-    if (isMatch) {
-      const token = jwt.sign(
-        { id: foundUser._id, name: foundUser.name },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "30d",
-        }
-      );
-
-      return res.status(200).json({ msg: "user logged in", token });
-    } else {
-      return res.status(400).json({ msg: "Bad password" });
-    }
-  } else {
-    return res.status(400).json({ msg: "Bad credentails" });
-  }
-};
-
-const dashboard = async (req, res) => {
-  const luckyNumber = Math.floor(Math.random() * 100);
-
-  res.status(200).json({
-    msg: `Hello, ${req.user.name}`,
-    secret: `Here is your authorized data, your lucky number is ${luckyNumber}`,
-  });
-};
-
-const getAllUsers = async (req, res) => {
-  let users = await User.find({});
-
-  return res.status(200).json({ users });
-};
-
-const register = async (req, res) => {
-  let foundUser = await User.findOne({ email: req.body.email });
-  if (foundUser === null) {
-    let { username, email, password } = req.body;
-    if (username.length && email.length && password.length) {
-      const person = new User({
-        name: username,
-        email: email,
-        password: password,
-      });
-      await person.save();
-      return res.status(201).json({ person });
-    }else{
-        return res.status(400).json({msg: "Please add all values in the request body"});
-    }
-  } else {
-    return res.status(400).json({ msg: "Email already in use" });
-  }
-};
-
-module.exports = {
-  login,
-  register,
-  dashboard,
-  getAllUsers,
-=======
 const Role = require("../models/Role");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
@@ -102,7 +28,7 @@ const login = async (req, res) => {
 				process.env.JWT_SECRET,
 				{
 					expiresIn: "30d",
-				},
+				}
 			);
 
 			// Chuyển đối tượng Mongoose thành plain JavaScript object
@@ -130,7 +56,9 @@ const registerOwner = async (req, res) => {
 			return res.status(400).json({ msg: "Email already in use" });
 		}
 
-		const usernameExists = await User.findOne({ username: req.body.username });
+		const usernameExists = await User.findOne({
+			username: req.body.username,
+		});
 		if (usernameExists) {
 			return res.status(400).json({ msg: "Username already taken" });
 		}
@@ -180,7 +108,7 @@ const registerOwner = async (req, res) => {
 		const token = jwt.sign(
 			{ id: newUser._id, name: newUser.name },
 			process.env.JWT_SECRET,
-			{ expiresIn: "30d" },
+			{ expiresIn: "30d" }
 		);
 
 		// Gửi email chào mừng
@@ -215,7 +143,9 @@ const registerTenant = async (req, res) => {
 			return res.status(400).json({ msg: "Email already in use" });
 		}
 
-		const usernameExists = await User.findOne({ username: req.body.username });
+		const usernameExists = await User.findOne({
+			username: req.body.username,
+		});
 		if (usernameExists) {
 			return res.status(400).json({ msg: "Username already taken" });
 		}
@@ -264,7 +194,7 @@ const registerTenant = async (req, res) => {
 		const token = jwt.sign(
 			{ id: newUser._id, name: newUser.name },
 			process.env.JWT_SECRET,
-			{ expiresIn: "30d" },
+			{ expiresIn: "30d" }
 		);
 
 		// Trả về response
@@ -366,7 +296,7 @@ const forgotPassword = async (req, res) => {
 
 		// Tạo URL reset
 		const resetURL = `${req.protocol}://${req.get(
-			"host",
+			"host"
 		)}/api/auth/reset-password/${resetToken}`;
 
 		// Nội dung email
@@ -406,7 +336,10 @@ const resetPassword = async (req, res) => {
 		}
 
 		// Hash token để tìm trong DB
-		const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+		const hashedToken = crypto
+			.createHash("sha256")
+			.update(token)
+			.digest("hex");
 
 		// Tìm người dùng có token còn hạn
 		const user = await User.findOne({
@@ -438,7 +371,7 @@ const resetPassword = async (req, res) => {
 		const token = jwt.sign(
 			{ id: user._id, name: user.name },
 			process.env.JWT_SECRET,
-			{ expiresIn: "30d" },
+			{ expiresIn: "30d" }
 		);
 
 		// Chuyển đối tượng Mongoose thành plain JavaScript object
@@ -467,5 +400,4 @@ module.exports = {
 	changePassword,
 	forgotPassword,
 	resetPassword,
->>>>>>> main
 };
