@@ -2,6 +2,7 @@ const Payment = require("../models/Payment");
 const Bill = require("../models/Bill");
 const Contract = require("../models/Contract");
 const paymentService = require("../services/paymentService");
+const { isValidObjectId } = require("mongoose");
 
 /**
  * Lấy danh sách thanh toán
@@ -65,6 +66,12 @@ const getPayments = async (req, res) => {
  */
 const getPaymentById = async (req, res) => {
 	try {
+		if (!req.params.id || !isValidObjectId(req.params.id)) {
+			return res.status(400).json({
+				success: false,
+				message: "ID thanh toán không hợp lệ",
+			});
+		}
 		const payment = await Payment.findById(req.params.id)
 			.populate("bill_id", "room_id room_price payment_deadline details")
 			.populate("user_id", "name username email phone")

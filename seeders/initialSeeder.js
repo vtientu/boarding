@@ -12,7 +12,7 @@ const seedDatabase = async () => {
 	try {
 		// Kết nối database
 		await mongoose.connect(
-			process.env.MONGODB_URI || "mongodb://localhost:27017/Boarding_Houses",
+			process.env.MONGODB_URI || "mongodb+srv://admin:abcd1234@boardinghousedb.sumkzje.mongodb.net/?retryWrites=true&w=majority&appName=BoardingHouseDB",
 		);
 
 		// Xóa dữ liệu cũ
@@ -65,7 +65,6 @@ const seedDatabase = async () => {
 			occupied_rooms: 0,
 			status: "Active",
 			location: "Quận 1, TP.HCM",
-			landlord_id: owner._id,
 		});
 
 		// Tạo Rooms

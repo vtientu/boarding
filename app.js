@@ -28,6 +28,7 @@ const boardingHouseRoutes = require("./routes/boardingHouseRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const chatRoutes = require("./routes/chat");
 const paymentRoutes = require("./routes/paymentRoutes");
+const contractRoutes = require("./routes/contractRoutes");
 
 app.use(express.json());
 
@@ -40,7 +41,8 @@ app.use("/tenants", tenantRouter);
 app.use("/boardinghouses", boardingHouseRoutes);
 app.use("/rooms", roomRoutes);
 app.use("/chat", chatRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/contracts", contractRoutes);
 
 // Khởi tạo WebSocket
 initializeSocket(server);
