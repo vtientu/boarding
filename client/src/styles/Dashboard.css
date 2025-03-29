@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .dashboard-container {
   width: 100%;
   min-height: 100vh;
@@ -26,6 +27,8 @@
   padding: 10px;
 }
 
+=======
+>>>>>>> main
 .dashboard-main{
     font-size: 30px;
     height: 100vh;
@@ -42,6 +45,7 @@
   padding: 0 20px
 }
 
+<<<<<<< HEAD
 /* Animation cho các card */
 @keyframes slideIn {
   from {
@@ -186,3 +190,30 @@
   }
 }
 
+=======
+.logout-button{
+    background: black;
+    color: white;
+    border: 3px solid black;
+    transition: background 1s linear 0ms;
+    transition: color 500ms linear 0ms;
+
+    width: 500px;
+    padding: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border-radius: 30px;
+    font-weight: 600;
+    margin-top: 10px;
+
+    font-size: 20px;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  
+  .logout-button:hover{
+    color: #333;
+    background-color: white;
+  }
+>>>>>>> main
