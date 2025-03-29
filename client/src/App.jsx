@@ -15,6 +15,7 @@ import BoardingHouseManagement from "./pages/admin/BoardingHouseManagement";
 import UserDashboard from "./pages/tenant/UserDashboard";
 import UserProfile from "./components/UserProfile";
 import Payment from "./pages/tenant/Payment";
+import ChangePassword from "./pages/tenant/ChangePassword";
 
 const router = createBrowserRouter([
 	{
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
 			{
 				path: "profile",
 				element: <UserProfile />,
+			},
+			{
+				path: "tenant/change-password",
+				element: <ChangePassword />,
 			},
 			{
 				path: "boarding-houses",

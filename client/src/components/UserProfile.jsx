@@ -11,9 +11,12 @@ import {
 	FaVenusMars,
 	FaIdCard,
 	FaUserFriends,
+	FaLock,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const UserProfile = () => {
+	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		fullName: "Vương Huy",
 		email: "huy@example.com",
@@ -40,6 +43,10 @@ const UserProfile = () => {
 		console.log("Form submitted:", formData);
 	};
 
+	const handleChangePassword = () => {
+		navigate("/tenant/change-password");
+	};
+
 	return (
 		<div className="profile-container">
 			<UserHeader />
@@ -48,9 +55,17 @@ const UserProfile = () => {
 				<div className="profile-main">
 					<div className="profile-header">
 						<h2>Thông tin cá nhân</h2>
-						<button className="save-btn" onClick={handleSubmit}>
-							<FaUser /> Lưu thay đổi
-						</button>
+						<div className="header-buttons">
+							<button
+								className="change-password-btn"
+								onClick={handleChangePassword}
+							>
+								<FaLock /> Đổi mật khẩu
+							</button>
+							<button className="save-btn" onClick={handleSubmit}>
+								<FaUser /> Lưu thay đổi
+							</button>
+						</div>
 					</div>
 
 					<form className="profile-form">
