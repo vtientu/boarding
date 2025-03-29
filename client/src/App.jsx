@@ -13,6 +13,7 @@ import BillManagement from "./pages/admin/BillManagement";
 import TenantManagement from "./pages/admin/TenantManagement";
 import UserDashboard from "./pages/tenant/UserDashboard";
 import UserProfile from "./components/UserProfile";
+import Payment from "./pages/tenant/Payment";
 
 const router = createBrowserRouter([
 	{
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
 			{
 				path: "tenants",
 				element: <TenantManagement />,
+			},
+			{
+				path: "payment",
+				element: <Payment />,
 			},
 			{
 				path: "logout",
