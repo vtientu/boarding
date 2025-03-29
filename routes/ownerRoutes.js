@@ -12,6 +12,7 @@ router.get("/rooms", ownerController.manageRooms); // done
 
 // Tenant Management - done
 router.post("/tenants", ownerController.manageTenants); // done
+router.get("/tenants/:id", ownerController.manageTenants); // done
 router.delete("/tenants/:id", ownerController.manageTenants); // done
 
 // Bill Management
