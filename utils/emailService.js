@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 // Tạo transporter với cấu hình từ biến môi trường
 let transporter = null;
@@ -54,9 +55,8 @@ const sendEmail = async (options) => {
 	}
 
 	// Cấu hình mặc định cho email
-	const defaultFrom = `${
-		process.env.EMAIL_FROM_NAME || "Boarding House System"
-	} <${process.env.EMAIL_USERNAME}>`;
+	const defaultFrom = `${process.env.EMAIL_FROM_NAME || "Boarding House System"
+		} <${process.env.EMAIL_USERNAME}>`;
 
 	// Cấu hình email để gửi
 	const mailOptions = {
