@@ -40,7 +40,7 @@ app.use("/tenants", tenantRouter);
 app.use("/boardinghouses", boardingHouseRoutes);
 app.use("/rooms", roomRoutes);
 app.use("/chat", chatRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/payments", paymentRoutes);
 
 // Khởi tạo WebSocket
 initializeSocket(server);

@@ -15,11 +15,11 @@ router.post("/tenants", ownerController.manageTenants); // done
 router.delete("/tenants/:id", ownerController.manageTenants); // done
 
 // Bill Management
-router.get("/bills", ownerController.manageBills);
-router.post("/bills", ownerController.manageBills);
-router.put("/bills/:id", ownerController.manageBills);
+router.get("/bills", ownerController.getBills); // OKE
+router.post("/bills/create", ownerController.createBill); // OKE
+router.put("/bills/:id", ownerController.updateBill); // OKE
 
 // Reports
-router.get("/reports", ownerController.generateReports);
+router.get("/reports", ownerController.generateReports); // OKE
 
 module.exports = router;

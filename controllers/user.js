@@ -21,7 +21,6 @@ const login = async (req, res) => {
 	let foundUser = await User.findOne({ email: req.body.email });
 	if (foundUser) {
 		const isMatch = await foundUser.comparePassword(password);
-		console.log("isMatch", isMatch);
 		if (isMatch) {
 			const token = jwt.sign(
 				{ id: foundUser._id, name: foundUser.name },
@@ -299,20 +298,20 @@ const forgotPassword = async (req, res) => {
 			"host"
 		)}/api/auth/reset-password/${resetToken}`;
 
-		// Nội dung email
-		const message = `  
-      Bạn đã yêu cầu đặt lại mật khẩu.   
-      Vui lòng truy cập đường dẫn sau để đặt lại mật khẩu của bạn: ${resetURL}  
-      Đường dẫn này sẽ hết hạn sau 10 phút.  
-      Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
-    `;
+	// 	// Nội dung email
+	// 	const message = `  
+    //   Bạn đã yêu cầu đặt lại mật khẩu.   
+    //   Vui lòng truy cập đường dẫn sau để đặt lại mật khẩu của bạn: ${resetURL}  
+    //   Đường dẫn này sẽ hết hạn sau 10 phút.  
+    //   Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
+    // `;
 
 		// // Sử dụng service để gửi email
-		// await sendPasswordResetEmail(user.email, user.name, resetURL);
+		await sendPasswordResetEmail(user.email, user.name, resetURL);
 
-		// res.status(200).json({
-		// 	msg: "Email đặt lại mật khẩu đã được gửi",
-		// });
+		res.status(200).json({
+			msg: "Email đặt lại mật khẩu đã được gửi",
+		});
 	} catch (error) {
 		console.error("Forgot password error:", error);
 		return res.status(500).json({
