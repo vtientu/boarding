@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import AddUserModal from "../../components/AddUserModal";
-import EditUserModal from "../../components/EditUserModal";
 import SearchFilter from "../../components/SearchFilter";
 import "../../styles/TenantManagement.css";
 import axios from "axios";
@@ -11,8 +10,6 @@ const UserManagement = () => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [filterStatus, setFilterStatus] = useState("");
 	const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-	const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
-	const [selectedUser, setSelectedUser] = useState(null);
 	const [users, setUsers] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -96,31 +93,6 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleEditUser = async (userData) => {
-		try {
-			const token = JSON.parse(localStorage.getItem("auth"));
-			if (!token) {
-				setError("Vui lòng đăng nhập để thực hiện thao tác này");
-				return;
-			}
-
-			await axios.put(
-				`http://localhost:3000/users/${selectedUser._id}`,
-				userData,
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
-			fetchUsers();
-			setIsEditUserModalOpen(false);
-			setSelectedUser(null);
-		} catch (err) {
-			setError(err.response?.data?.msg || "Có lỗi xảy ra khi cập nhật thông tin người dùng");
-		}
-	};
-
 	const handleDeleteUser = async (userId) => {
 		if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
 			try {
@@ -130,7 +102,7 @@ const UserManagement = () => {
 					return;
 				}
 
-				await axios.delete(`http://localhost:3000/users/${userId}`, {
+				await axios.delete(`http://localhost:3000/users/delete/${userId}`, {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
@@ -140,11 +112,6 @@ const UserManagement = () => {
 				setError(err.response?.data?.msg || "Có lỗi xảy ra khi xóa người dùng");
 			}
 		}
-	};
-
-	const openEditModal = (user) => {
-		setSelectedUser(user);
-		setIsEditUserModalOpen(true);
 	};
 
 	return (
@@ -188,7 +155,6 @@ const UserManagement = () => {
 											<th>Số điện thoại</th>
 											<th>Địa chỉ</th>
 											<th>Vai trò</th>
-											<th>Trạng thái</th>
 											<th>Thao tác</th>
 										</tr>
 									</thead>
@@ -214,26 +180,8 @@ const UserManagement = () => {
 													</span>
 												</td>
 												<td>
-													<span
-														className={`status ${
-															user.status === "active"
-																? "active"
-																: "inactive"
-														}`}
-													>
-														{user.status === "active"
-															? "Hoạt động"
-															: "Không hoạt động"}
-													</span>
-												</td>
-												<td>
 													<div className="action-buttons">
-														<button 
-															className="edit-btn"
-															onClick={() => openEditModal(user)}
-														>
-															Sửa
-														</button>
+														<button className="edit-btn">Sửa</button>
 														<button 
 															className="delete-btn"
 															onClick={() => handleDeleteUser(user._id)}
@@ -286,16 +234,6 @@ const UserManagement = () => {
 				isOpen={isAddUserModalOpen}
 				onClose={() => setIsAddUserModalOpen(false)}
 				onSubmit={handleAddUser}
-			/>
-
-			<EditUserModal
-				isOpen={isEditUserModalOpen}
-				onClose={() => {
-					setIsEditUserModalOpen(false);
-					setSelectedUser(null);
-				}}
-				onSubmit={handleEditUser}
-				user={selectedUser}
 			/>
 		</div>
 	);

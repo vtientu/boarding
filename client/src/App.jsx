@@ -134,10 +134,6 @@ const router = createBrowserRouter([
 				element: <BillManagement />,
 			},
 			{
-				path: "tenants",
-				element: <TenantManagement />,
-			},
-			{
 				path: "payment",
 				element: <Payment />,
 			},
