@@ -10,7 +10,7 @@ import {
 import { ToastContainer } from "react-toastify";
 import RoomManagement from "./pages/admin/RoomManagement";
 import BillManagement from "./pages/admin/BillManagement";
-import TenantManagement from "./pages/admin/TenantManagement";
+import UserManagement from "./pages/admin/UserManagement";
 import BoardingHouseManagement from "./pages/admin/BoardingHouseManagement";
 import UserDashboard from "./pages/tenant/UserDashboard";
 import UserProfile from "./components/UserProfile";
@@ -69,7 +69,7 @@ const router = createBrowserRouter([
       },
       {
         path: "tenants",
-        element: <TenantManagement />,
+        element: <UserManagement />,
       },
       {
         path: "logout",

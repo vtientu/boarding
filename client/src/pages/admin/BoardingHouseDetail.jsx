@@ -5,6 +5,7 @@ import Sidebar from "../../components/Sidebar";
 import EditBoardingHouseModal from "../../components/EditBoardingHouseModal";
 import AddRoomModal from "../../components/AddRoomModal";
 import EditRoomModal from "../../components/EditRoomModal";
+import SearchFilter from "../../components/SearchFilter";
 import "../../styles/BoardingHouseDetail.css";
 import axios from "axios";
 
@@ -21,6 +22,38 @@ const BoardingHouseDetail = () => {
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
   const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterRoomType, setFilterRoomType] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0,
+  });
+  const [stats, setStats] = useState({
+    totalRooms: 0,
+    availableRooms: 0,
+    occupiedRooms: 0,
+    maintenanceRooms: 0,
+    totalMonthlyIncome: 0,
+  });
+
+  const filterOptions = [
+    { value: "", label: "Tất cả trạng thái" },
+    { value: "Available", label: "Trống" },
+    { value: "Occupied", label: "Đã thuê" },
+    { value: "Maintenance", label: "Đang sửa" },
+  ];
+
+  const roomTypeOptions = [
+    { value: "", label: "Tất cả loại phòng" },
+    { value: "Deluxe", label: "Deluxe" },
+    { value: "Standard", label: "Standard" },
+    { value: "Basic", label: "Basic" },
+  ];
 
   const fetchBoardingHouseDetail = async () => {
     try {
@@ -44,10 +77,38 @@ const BoardingHouseDetail = () => {
     try {
       setRoomsLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/rooms/boardinghouse/${id}`
+        `http://localhost:3000/rooms/boardinghouse/${id}`,
+        {
+          params: {
+            page: pagination.page,
+            limit: pagination.limit,
+            status: filterStatus,
+            room_type: filterRoomType,
+            min_price: minPrice,
+            max_price: maxPrice,
+            keyword: searchTerm,
+          },
+        }
       );
       if (response.data.rooms) {
         setRooms(response.data.rooms);
+      }
+      if (response.data.pagination) {
+        setPagination({
+          page: response.data.pagination.page || 1,
+          limit: response.data.pagination.limit || 10,
+          total: response.data.pagination.total || 0,
+          pages: response.data.pagination.pages || 1,
+        });
+      }
+      if (response.data.stats) {
+        setStats({
+          totalRooms: response.data.stats.totalRooms || 0,
+          availableRooms: response.data.stats.availableRooms || 0,
+          occupiedRooms: response.data.stats.occupiedRooms || 0,
+          maintenanceRooms: response.data.stats.maintenanceRooms || 0,
+          totalMonthlyIncome: response.data.stats.totalMonthlyIncome || 0,
+        });
       }
     } catch (err) {
       setRoomsError(
@@ -60,8 +121,11 @@ const BoardingHouseDetail = () => {
 
   useEffect(() => {
     fetchBoardingHouseDetail();
-    fetchRooms();
   }, [id]);
+
+  useEffect(() => {
+    fetchRooms();
+  }, [id, pagination.page, filterStatus, filterRoomType, minPrice, maxPrice, searchTerm]);
 
   const handleUpdateBoardingHouse = async (updatedData) => {
     try {
@@ -309,6 +373,46 @@ const BoardingHouseDetail = () => {
                     Thêm phòng mới
                   </button>
                 </div>
+
+                <SearchFilter
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  filterStatus={filterStatus}
+                  setFilterStatus={setFilterStatus}
+                  filterRoomType={filterRoomType}
+                  setFilterRoomType={setFilterRoomType}
+                  minPrice={minPrice}
+                  setMinPrice={setMinPrice}
+                  maxPrice={maxPrice}
+                  setMaxPrice={setMaxPrice}
+                  searchPlaceholder="Tìm kiếm theo số phòng hoặc mô tả..."
+                  filterOptions={filterOptions}
+                  roomTypeOptions={roomTypeOptions}
+                />
+
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <span className="stat-label">Tổng số phòng:</span>
+                    <span className="stat-value">{stats.totalRooms}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Phòng trống:</span>
+                    <span className="stat-value">{stats.availableRooms}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Phòng đã thuê:</span>
+                    <span className="stat-value">{stats.occupiedRooms}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Phòng đang sửa:</span>
+                    <span className="stat-value">{stats.maintenanceRooms}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Tổng thu nhập:</span>
+                    <span className="stat-value">{formatCurrency(stats.totalMonthlyIncome)}</span>
+                  </div>
+                </div>
+
                 <div className="table-container">
                   {roomsLoading ? (
                     <div className="loading">Đang tải danh sách phòng...</div>
@@ -375,6 +479,36 @@ const BoardingHouseDetail = () => {
                     </div>
                   )}
                 </div>
+
+                {!roomsLoading && pagination.pages > 1 && (
+                  <div className="pagination">
+                    <button
+                      onClick={() =>
+                        setPagination((prev) => ({
+                          ...prev,
+                          page: Math.max(1, prev.page - 1),
+                        }))
+                      }
+                      disabled={pagination.page === 1}
+                    >
+                      Trước
+                    </button>
+                    <span>
+                      Trang {pagination.page} / {pagination.pages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setPagination((prev) => ({
+                          ...prev,
+                          page: Math.min(pagination.pages, prev.page + 1),
+                        }))
+                      }
+                      disabled={pagination.page === pagination.pages}
+                    >
+                      Sau
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
