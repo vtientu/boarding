@@ -61,7 +61,7 @@ async function assignTenantToRoom(req, res) {
 			tenant_id: tenant_id,
 			status: "Occupied",
 		},
-		{ new: true },
+		{ new: true }
 	);
 
 	res.json(updatedRoom);
@@ -77,7 +77,7 @@ async function removeTenantFromRoom(req, res) {
 			tenant_id: null,
 			status: "Available",
 		},
-		{ new: true },
+		{ new: true }
 	);
 
 	res.json(updatedRoom);
@@ -85,7 +85,17 @@ async function removeTenantFromRoom(req, res) {
 
 exports.createBill = async (req, res) => {
 	try {
-		const { room_id, user_id, room_price, electricity, water, additional_services, payment_deadline, details, image } = req.body;
+		const {
+			room_id,
+			user_id,
+			room_price,
+			electricity,
+			water,
+			additional_services,
+			payment_deadline,
+			details,
+			image,
+		} = req.body;
 
 		const bill = new Bill({
 			room_id,
@@ -105,7 +115,7 @@ exports.createBill = async (req, res) => {
 	} catch (error) {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
-}
+};
 
 exports.updateBill = async (req, res) => {
 	try {
@@ -113,17 +123,29 @@ exports.updateBill = async (req, res) => {
 		if (!isValidObjectId(id)) {
 			return res.status(400).json({ message: "Invalid bill ID" });
 		}
-		const { room_price, electricity, water, additional_services, payment_deadline, details, image } = req.body;
-
-		const bill = await Bill.findByIdAndUpdate(id, {
+		const {
 			room_price,
 			electricity,
 			water,
 			additional_services,
-			payment_deadline: new Date(payment_deadline),
+			payment_deadline,
 			details,
 			image,
-		}, { new: true });
+		} = req.body;
+
+		const bill = await Bill.findByIdAndUpdate(
+			id,
+			{
+				room_price,
+				electricity,
+				water,
+				additional_services,
+				payment_deadline: new Date(payment_deadline),
+				details,
+				image,
+			},
+			{ new: true }
+		);
 
 		res.status(200).json({ message: "Bill updated successfully", bill });
 	} catch (error) {
@@ -133,21 +155,10 @@ exports.updateBill = async (req, res) => {
 
 exports.getBills = async (req, res) => {
 	try {
-		const {
-			page = 1,
-			limit = 10,
-		} = req.query;
+		const { page = 1, limit = 10 } = req.query;
 
 		const skip = (page - 1) * limit;
-		const bills = await Bill.find({
-			room_id: {
-				$in: await Room.find({ landlord_id: req.user.id }).select("_id"),
-			},
-		})
-			.populate("room_id")
-			.populate("user_id")
-			.skip(skip)
-			.limit(parseInt(limit));
+		const bills = await Bill.find();
 
 		const totalBills = await Bill.countDocuments({
 			room_id: {

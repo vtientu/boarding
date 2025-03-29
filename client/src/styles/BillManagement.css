@@ -84,63 +84,60 @@
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   width: 100%;
+  overflow-x: auto;
+  margin: 0 -24px;
+  padding: 0 24px;
 }
 
 .bills-table table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  text-align: center;
+  min-width: 1200px;
 }
 
 .bills-table th,
 .bills-table td {
-  padding: 8px 12px;
-  text-align: center;
+  padding: 12px 16px;
+  text-align: left;
   border-bottom: 1px solid #eef2f7;
   vertical-align: middle;
-  white-space: nowrap;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
-/* Set specific widths for each column */
-.bills-table th:nth-child(1), 
-.bills-table td:nth-child(1) { /* Số phòng */
-  width: 80px;
-}
-
-.bills-table th:nth-child(2), 
-.bills-table td:nth-child(2) { /* Tên người thuê */
+/* Set specific widths for columns */
+.bills-table th:nth-child(1),
+.bills-table td:nth-child(1) { /* Mã hóa đơn */
   width: 100px;
 }
 
-.bills-table th:nth-child(3), 
-.bills-table td:nth-child(3) { /* Giá thuê */
-  width: 100px;
+.bills-table th:nth-child(2),
+.bills-table td:nth-child(2) { /* Thông tin phòng */
+  width: 200px;
 }
 
-.bills-table th:nth-child(4), 
-.bills-table td:nth-child(4) { /* Ngày thanh toán */
-  width: 100px;
+.bills-table th:nth-child(3),
+.bills-table td:nth-child(3) { /* Thông tin người thuê */
+  width: 200px;
 }
 
-.bills-table th:nth-child(5), 
-.bills-table td:nth-child(5) { /* Loại phòng */
-  width: 80px;
+.bills-table th:nth-child(4),
+.bills-table td:nth-child(4) { /* Tổng tiền */
+  width: 150px;
 }
 
-.bills-table th:nth-child(6), 
-.bills-table td:nth-child(6) { /* Số người */
-  width: 70px;
+.bills-table th:nth-child(5),
+.bills-table td:nth-child(5) { /* Hạn thanh toán */
+  width: 120px;
 }
 
-.bills-table th:nth-child(7), 
-.bills-table td:nth-child(7) { /* Trạng thái */
-  width: 90px;
+.bills-table th:nth-child(6),
+.bills-table td:nth-child(6) { /* Trạng thái */
+  width: 180px;
 }
 
-.bills-table th:last-child, 
-.bills-table td:last-child { /* Thao tác */
+.bills-table th:nth-child(7),
+.bills-table td:nth-child(7) { /* Thao tác */
   width: 200px;
 }
 
@@ -151,11 +148,57 @@
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .bills-table tr:hover {
   background-color: #f8f9fa;
   transition: all 0.3s ease;
+}
+
+.bill-id {
+  font-family: 'Roboto Mono', monospace;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.room-info,
+.tenant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-info strong,
+.tenant-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.room-type,
+.tenant-info span {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.amount-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount-info strong {
+  color: #00695c;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.deadline-info {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .status-badge {
@@ -179,37 +222,9 @@
   color: #d32f2f;
 }
 
-.amount {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 500;
-  color: #00695c;
-  white-space: nowrap;
-}
-
-.payment-status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: inline-block;
-  text-align: center;
-  min-width: 100px;
-  transition: all 0.3s ease;
-}
-
-.payment-status.paid {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
-
-.payment-status.pending {
+.status-badge.pending {
   background-color: #fff3e0;
   color: #ef6c00;
-}
-
-.payment-status.overdue {
-  background-color: #ffebee;
-  color: #c62828;
 }
 
 .action-buttons {
@@ -222,7 +237,6 @@
 
 .view-btn,
 .edit-btn,
-.delete-btn,
 .print-btn {
   padding: 6px 12px;
   min-width: 40px;
@@ -261,17 +275,6 @@
   box-shadow: 0 4px 10px rgba(2, 136, 209, 0.4);
 }
 
-.delete-btn {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-  color: white;
-  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
-}
-
-.delete-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
-}
-
 .print-btn {
   background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
   color: white;
@@ -281,6 +284,52 @@
 .print-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(63, 81, 181, 0.4);
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.expand-btn:hover {
+  color: #00695c;
+}
+
+.details-row {
+  background-color: #f8f9fa;
+}
+
+.bill-details {
+  padding: 16px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item .label {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.detail-item .value {
+  color: #2c3e50;
+  font-weight: 500;
 }
 
 .bill-summary {
@@ -324,9 +373,14 @@
 }
 
 /* Responsive styles */
-@media (max-width: 1024px) {
-  .bill-filters {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1200px) {
+  .bills-table {
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .bills-table table {
+    min-width: 1000px;
   }
 }
 
@@ -355,18 +409,14 @@
     font-size: 0.85rem;
   }
 
-  .bill-filters {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
   .bills-table {
-    margin: 0 -16px;
+    margin: 0;
+    padding: 0;
     border-radius: 0;
   }
 
   .bills-table table {
-    min-width: 650px;
+    min-width: 800px;
   }
 
   .bills-table th,
@@ -381,7 +431,6 @@
 
   .view-btn,
   .edit-btn,
-  .delete-btn,
   .print-btn {
     padding: 4px 8px;
     min-width: 35px;
@@ -389,7 +438,29 @@
     font-size: 0.75rem;
   }
 
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+
   .summary-card {
     padding: 16px;
   }
+}
+
+/* Add horizontal scroll indicator */
+.bills-table::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bills-table:hover::after {
+  opacity: 1;
 } 
