@@ -46,7 +46,7 @@ const Sidebar = () => {
 						location.pathname === "/bills" ? "active" : ""
 					}`}
 				>
-					QL Thu tiền & hoá đơn
+					Quản lý hoá đơn
 				</Link>
 				<Link
 					to="/reports"
