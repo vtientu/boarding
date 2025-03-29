@@ -36,7 +36,7 @@ app.use("/tenants", tenantRouter);
 app.use("/boardinghouses", boardingHouseRoutes);
 app.use("/rooms", roomRoutes);
 app.use("/chat", chatRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Khởi tạo WebSocket
 initializeSocket(server);
@@ -47,14 +47,14 @@ server.listen(port, () => {
 });
 
 // Xử lý lỗi khi khởi động server
-server.on('error', (err) => {
-	if (err.code === 'EADDRINUSE') {
+server.on("error", (err) => {
+	if (err.code === "EADDRINUSE") {
 		console.error(`Cổng ${port} đã bị chiếm!`);
 	} else {
 		console.error(`🔥 Lỗi server: ${JSON.stringify(err, null, 2)}`);
 	}
 
-	process.on('beforeExit', () => {
+	process.on("beforeExit", () => {
 		process.exit(1);
 	});
 });

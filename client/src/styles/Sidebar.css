@@ -1,0 +1,79 @@
+.sidebar {
+  min-width: 240px;
+  width: 240px;
+  height: 100%;
+  background: linear-gradient(180deg, #f8f9ff 0%, #e3e6f5 100%);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px 0;
+  position: fixed;
+  left: 0;
+  top: 70px; /* Chiều cao của header */
+  bottom: 0;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.nav-item {
+  padding: 14px 18px;
+  color: #444;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.nav-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #222;
+  transform: scale(1.02);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(26, 115, 232, 0.2), rgba(76, 175, 80, 0.2));
+  color: #1a73e8;
+  font-weight: 600;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 1000;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+.main-content {
+  margin-left: 240px;
+  padding: 20px;
+  width: calc(100% - 240px);
+}
