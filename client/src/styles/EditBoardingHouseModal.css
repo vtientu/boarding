@@ -104,28 +104,4 @@
 
 .submit-button:hover {
   background-color: #45a049;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .modal-content {
-    margin: 16px;
-    padding: 20px;
-  }
-
-  .modal-header h2 {
-    font-size: 1.25rem;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-
-  .cancel-button,
-  .submit-button {
-    padding: 6px 12px;
-    font-size: 0.9rem;
-  }
 } 
