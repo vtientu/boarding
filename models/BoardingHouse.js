@@ -23,11 +23,6 @@ const BoardingHouseSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		landlord_id: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
-			required: true,
-		},
 	},
 	{ timestamps: true },
 );

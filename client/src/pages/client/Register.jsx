@@ -19,27 +19,28 @@ const Login = () => {
 	const handleRegisterSubmit = async (e) => {
 		e.preventDefault();
 		let name = e.target.name.value;
-		let lastname = e.target.lastname.value;
+		let username = e.target.username.value;
 		let email = e.target.email.value;
 		let password = e.target.password.value;
 		let confirmPassword = e.target.confirmPassword.value;
 
 		if (
 			name.length > 0 &&
-			lastname.length > 0 &&
+			username.length > 0 &&
 			email.length > 0 &&
 			password.length > 0 &&
 			confirmPassword.length > 0
 		) {
 			if (password === confirmPassword) {
 				const formData = {
-					username: name + " " + lastname,
+					name,
+					username,
 					email,
 					password,
 				};
 				try {
 					const response = await axios.post(
-						"http://localhost:3000/api/v1/register",
+						"http://localhost:3000/users/register_owner",
 						formData
 					);
 					toast.success("Registration successfull");
@@ -84,8 +85,8 @@ const Login = () => {
 							/>
 							<input
 								type="text"
-								placeholder="Lastname"
-								name="lastname"
+								placeholder="Username"
+								name="username"
 								required={true}
 							/>
 							<input

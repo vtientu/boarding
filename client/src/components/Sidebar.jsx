@@ -17,6 +17,14 @@ const Sidebar = () => {
 					Trang chủ
 				</Link>
 				<Link
+					to="/boarding-houses"
+					className={`nav-item ${
+						location.pathname === "/boarding-houses" ? "active" : ""
+					}`}
+				>
+					QL Nhà trọ
+				</Link>
+				<Link
 					to="/rooms"
 					className={`nav-item ${
 						location.pathname === "/rooms" ? "active" : ""

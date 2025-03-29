@@ -2,6 +2,7 @@ const BoardingHouse = require("../models/BoardingHouse");
 const Room = require("../models/Room");
 const User = require("../models/User");
 const Role = require("../models/Role");
+const { updateBoardingHouseStats } = require("../utils/boardingHouseUtils");
 
 const mongoose = require("mongoose");
 
@@ -43,15 +44,25 @@ const getAllBoardingHouses = async (req, res) => {
 		// Thực hiện query với pagination
 		const skip = (page - 1) * limit;
 		const boardingHouses = await BoardingHouse.find(query)
-			.populate("landlord_id", "name username email phone")
 			.sort(options.sort)
 			.skip(skip)
 			.limit(limit);
 
+		// Cập nhật thống kê cho từng nhà trọ
+		const boardingHousesWithStats = await Promise.all(
+			boardingHouses.map(async (house) => {
+				const stats = await updateBoardingHouseStats(house._id);
+				return {
+					...house.toObject(),
+					...stats
+				};
+			})
+		);
+
 		const total = await BoardingHouse.countDocuments(query);
 
 		res.status(200).json({
-			data: boardingHouses,
+			data: boardingHousesWithStats,
 			pagination: {
 				total,
 				page: options.page,
@@ -74,10 +85,7 @@ const getBoardingHouseDetail = async (req, res) => {
 			return res.status(400).json({ msg: "Invalid boarding house ID" });
 		}
 
-		const boardingHouse = await BoardingHouse.findById(id).populate(
-			"landlord_id",
-			"name username email phone",
-		);
+		const boardingHouse = await BoardingHouse.findById(id);
 
 		if (!boardingHouse) {
 			return res.status(404).json({ msg: "Boarding house not found" });
@@ -86,8 +94,14 @@ const getBoardingHouseDetail = async (req, res) => {
 		// Lấy danh sách phòng trong nhà trọ
 		const rooms = await Room.find({ boarding_house_id: id });
 
+		// Cập nhật thống kê
+		const stats = await updateBoardingHouseStats(id);
+
 		res.status(200).json({
-			boardingHouse,
+			boardingHouse: {
+				...boardingHouse.toObject(),
+				...stats
+			},
 			rooms,
 		});
 	} catch (error) {
@@ -104,7 +118,6 @@ const createBoardingHouse = async (req, res) => {
 
 		// Kiểm tra quyền
 		const user = await User.findById(userId).populate("role_id");
-		console.log(user);
 		if (!user || user.role_id.role_name !== "Owner") {
 			return res.status(403).json({
 				msg: "Permission denied. Only owners can create boarding houses",
@@ -115,17 +128,19 @@ const createBoardingHouse = async (req, res) => {
 		const newBoardingHouse = new BoardingHouse({
 			location,
 			status,
-			landlord_id: userId,
-			total_income: 0,
-			empty_rooms: 0,
-			occupied_rooms: 0,
 		});
 
 		await newBoardingHouse.save();
 
+		// Cập nhật thống kê ban đầu
+		const stats = await updateBoardingHouseStats(newBoardingHouse._id);
+
 		res.status(201).json({
 			msg: "Boarding house created successfully",
-			boardingHouse: newBoardingHouse,
+			boardingHouse: {
+				...newBoardingHouse.toObject(),
+				...stats
+			},
 		});
 	} catch (error) {
 		console.error("Error creating boarding house:", error);
@@ -155,22 +170,21 @@ const updateBoardingHouse = async (req, res) => {
 			return res.status(404).json({ msg: "Boarding house not found" });
 		}
 
-		// Chỉ chủ trọ mới có thể cập nhật
-		if (boardingHouse.landlord_id.toString() !== userId) {
-			return res.status(403).json({
-				msg: "Permission denied. You are not the owner of this boarding house",
-			});
-		}
-
 		const updatedBoardingHouse = await BoardingHouse.findByIdAndUpdate(
 			id,
 			{ location, status },
 			{ new: true, runValidators: true },
 		);
 
+		// Cập nhật thống kê
+		const stats = await updateBoardingHouseStats(id);
+
 		res.status(200).json({
 			msg: "Boarding house updated successfully",
-			boardingHouse: updatedBoardingHouse,
+			boardingHouse: {
+				...updatedBoardingHouse.toObject(),
+				...stats
+			},
 		});
 	} catch (error) {
 		console.error("Error updating boarding house:", error);
@@ -197,13 +211,6 @@ const deleteBoardingHouse = async (req, res) => {
 		const boardingHouse = await BoardingHouse.findById(id);
 		if (!boardingHouse) {
 			return res.status(404).json({ msg: "Boarding house not found" });
-		}
-
-		// Chỉ chủ trọ mới có thể xóa
-		if (boardingHouse.landlord_id.toString() !== userId) {
-			return res.status(403).json({
-				msg: "Permission denied. You are not the owner of this boarding house",
-			});
 		}
 
 		// Xóa tất cả phòng trong nhà trọ
@@ -250,45 +257,39 @@ const searchBoardingHouses = async (req, res) => {
 			query.status = status;
 		}
 
-		// Filter theo số phòng
-		if (minRooms || maxRooms) {
-			query.$and = [];
-
-			if (minRooms) {
-				query.$and.push({
-					$expr: {
-						$gte: [
-							{ $add: ["$empty_rooms", "$occupied_rooms"] },
-							parseInt(minRooms),
-						],
-					},
-				});
-			}
-
-			if (maxRooms) {
-				query.$and.push({
-					$expr: {
-						$lte: [
-							{ $add: ["$empty_rooms", "$occupied_rooms"] },
-							parseInt(maxRooms),
-						],
-					},
-				});
-			}
-		}
-
 		// Thực hiện query với pagination
 		const skip = (page - 1) * limit;
 		const boardingHouses = await BoardingHouse.find(query)
-			.populate("landlord_id", "name username email phone")
 			.skip(skip)
 			.limit(parseInt(limit))
 			.sort({ createdAt: -1 });
 
-		const total = await BoardingHouse.countDocuments(query);
+		// Cập nhật thống kê cho từng nhà trọ
+		const boardingHousesWithStats = await Promise.all(
+			boardingHouses.map(async (house) => {
+				const stats = await updateBoardingHouseStats(house._id);
+				return {
+					...house.toObject(),
+					...stats
+				};
+			})
+		);
+
+		// Filter theo số phòng sau khi đã có thống kê
+		let filteredBoardingHouses = boardingHousesWithStats;
+		if (minRooms || maxRooms) {
+			filteredBoardingHouses = boardingHousesWithStats.filter(house => {
+				const totalRooms = house.empty_rooms + house.occupied_rooms;
+				if (minRooms && totalRooms < parseInt(minRooms)) return false;
+				if (maxRooms && totalRooms > parseInt(maxRooms)) return false;
+				return true;
+			});
+		}
+
+		const total = filteredBoardingHouses.length;
 
 		res.status(200).json({
-			data: boardingHouses,
+			data: filteredBoardingHouses,
 			pagination: {
 				total,
 				page: parseInt(page),
@@ -307,7 +308,7 @@ const getMyBoardingHouses = async (req, res) => {
 	try {
 		const userId = req.user.id;
 
-		// Kiểm tra quyền - chỉ chủ trọ mới có thể xem nhà trọ của mình
+		// Kiểm tra quyền - chỉ chủ trọ mới có thể xem nhà trọ
 		const user = await User.findById(userId);
 		if (!user) {
 			return res.status(404).json({
@@ -325,7 +326,7 @@ const getMyBoardingHouses = async (req, res) => {
 
 		// Xử lý pagination và filter
 		const { location, status, sort, page = 1, limit = 10 } = req.query;
-		const query = { landlord_id: userId };
+		const query = {};
 
 		// Filter theo location
 		if (location) {
@@ -355,12 +356,22 @@ const getMyBoardingHouses = async (req, res) => {
 
 		// Thực hiện query
 		const boardingHouses = await BoardingHouse.find(query)
-			.populate("landlord_id", "name username email phone")
 			.sort(sortOptions)
 			.skip(skip)
 			.limit(parseInt(limit));
 
-		// Tổng số nhà trọ của chủ này
+		// Cập nhật thống kê cho từng nhà trọ
+		const boardingHousesWithStats = await Promise.all(
+			boardingHouses.map(async (house) => {
+				const stats = await updateBoardingHouseStats(house._id);
+				return {
+					...house.toObject(),
+					...stats
+				};
+			})
+		);
+
+		// Tổng số nhà trọ
 		const total = await BoardingHouse.countDocuments(query);
 
 		// Thêm thông tin tổng hợp
@@ -373,8 +384,18 @@ const getMyBoardingHouses = async (req, res) => {
 		};
 
 		// Tính tổng số phòng và tổng thu nhập từ tất cả nhà trọ
-		const allBoardingHouses = await BoardingHouse.find({ landlord_id: userId });
-		allBoardingHouses.forEach((bh) => {
+		const allBoardingHouses = await BoardingHouse.find();
+		const allBoardingHousesWithStats = await Promise.all(
+			allBoardingHouses.map(async (house) => {
+				const stats = await updateBoardingHouseStats(house._id);
+				return {
+					...house.toObject(),
+					...stats
+				};
+			})
+		);
+
+		allBoardingHousesWithStats.forEach((bh) => {
 			summary.totalRooms += bh.empty_rooms + bh.occupied_rooms;
 			summary.occupiedRooms += bh.occupied_rooms;
 			summary.emptyRooms += bh.empty_rooms;
@@ -382,7 +403,7 @@ const getMyBoardingHouses = async (req, res) => {
 		});
 
 		res.status(200).json({
-			data: boardingHouses,
+			data: boardingHousesWithStats,
 			pagination: {
 				total,
 				page: parseInt(page),

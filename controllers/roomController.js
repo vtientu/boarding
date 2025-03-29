@@ -2,6 +2,7 @@ const Room = require("../models/Room");
 const BoardingHouse = require("../models/BoardingHouse");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const Contract = require("../models/Contract");
 
 // Lấy tất cả phòng
 const getAllRooms = async (req, res) => {
@@ -400,7 +401,6 @@ const searchRooms = async (req, res) => {
 };
 
 // Lấy tất cả phòng của owner đang đăng nhập
-// Lấy tất cả phòng của owner đang đăng nhập
 const getOwnerRooms = async (req, res) => {
 	try {
 		const userId = req.user.id;
@@ -475,6 +475,21 @@ const getOwnerRooms = async (req, res) => {
 			.skip(skip)
 			.limit(parseInt(limit));
 
+		// Lấy thông tin hợp đồng cho mỗi phòng
+		const roomsWithContracts = await Promise.all(
+			rooms.map(async (room) => {
+				const activeContract = await Contract.findOne({
+					room_id: room._id,
+					status: "Active",
+				}).populate("user_id", "name phone email");
+
+				return {
+					...room.toObject(),
+					contract: activeContract,
+				};
+			})
+		);
+
 		const total = await Room.countDocuments(query);
 
 		// Tổng hợp thống kê
@@ -497,79 +512,8 @@ const getOwnerRooms = async (req, res) => {
 			} else if (room.status === "Maintenance") stats.maintenanceRooms++;
 		});
 
-		// Chuyển đổi userId thành ObjectId
-		const userObjectId = new mongoose.Types.ObjectId(userId);
-
-		// Thống kê theo từng boarding house
-		const boardingHouseStats = await Room.aggregate([
-			{ $match: { landlord_id: userObjectId } },
-			{
-				$group: {
-					_id: "$boarding_house_id",
-					totalRooms: { $sum: 1 },
-					availableRooms: {
-						$sum: { $cond: [{ $eq: ["$status", "Available"] }, 1, 0] },
-					},
-					occupiedRooms: {
-						$sum: { $cond: [{ $eq: ["$status", "Occupied"] }, 1, 0] },
-					},
-					maintenanceRooms: {
-						$sum: { $cond: [{ $eq: ["$status", "Maintenance"] }, 1, 0] },
-					},
-					totalMonthlyIncome: {
-						$sum: {
-							$cond: [
-								{ $eq: ["$status", "Occupied"] },
-								{ $ifNull: ["$month_rent", 0] },
-								0,
-							],
-						},
-					},
-				},
-			},
-			{
-				$lookup: {
-					from: "boardinghouses",
-					localField: "_id",
-					foreignField: "_id",
-					as: "boardingHouseInfo",
-				},
-			},
-			{
-				$unwind: {
-					path: "$boardingHouseInfo",
-					preserveNullAndEmptyArrays: true,
-				},
-			},
-			{
-				$project: {
-					_id: 1,
-					boardingHouseLocation: {
-						$ifNull: ["$boardingHouseInfo.location", "Unknown"],
-					},
-					totalRooms: 1,
-					availableRooms: 1,
-					occupiedRooms: 1,
-					maintenanceRooms: 1,
-					occupancyRate: {
-						$cond: [
-							{ $eq: ["$totalRooms", 0] },
-							0,
-							{
-								$multiply: [
-									{ $divide: ["$occupiedRooms", "$totalRooms"] },
-									100,
-								],
-							},
-						],
-					},
-					totalMonthlyIncome: 1,
-				},
-			},
-		]);
-
 		res.status(200).json({
-			data: rooms,
+			data: roomsWithContracts,
 			pagination: {
 				total,
 				page: parseInt(page),
@@ -577,7 +521,6 @@ const getOwnerRooms = async (req, res) => {
 				pages: Math.ceil(total / parseInt(limit)),
 			},
 			stats,
-			boardingHouseStats,
 		});
 	} catch (error) {
 		console.error("Error getting owner rooms:", error);

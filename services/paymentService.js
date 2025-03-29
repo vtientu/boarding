@@ -5,6 +5,8 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const Payment = require("../models/Payment");
 const Bill = require("../models/Bill");
+require("dotenv").config();
+const { VNPay } = require('vnpay')
 
 class PaymentService {
 	constructor() {
@@ -16,19 +18,33 @@ class PaymentService {
 			"https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 		this.vnp_ReturnUrl =
 			process.env.VNP_RETURN_URL ||
-			"http://localhost:5000/api/payments/vnpay-return";
+			"http://localhost:3000/api/payments/vnpay-return";
 		this.vnp_ApiUrl =
 			process.env.VNP_API_URL ||
 			"https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
-	}
+		this.vnpay = new VNPay({
+			tmnCode: this.vnp_TmnCode,
+			secureSecret: this.vnp_HashSecret,
+			testMode: true, // tùy chọn, ghi đè vnpayHost thành sandbox nếu là true
+			hashAlgorithm: 'SHA512', // tùy chọn
 
+			/**
+			 * Bật/tắt ghi log
+			 * Nếu enableLog là false, loggerFn sẽ không được sử dụng trong bất kỳ phương thức nào
+			 */
+			enableLog: true, // tùy chọn
+		});
+	}
 	/**
 	 * Tạo một giao dịch thanh toán VNPay
 	 * @param {Object} data - Dữ liệu thanh toán
 	 * @returns {String} - URL thanh toán
-	 */
+	*/
 	async createVnpayPayment(data) {
 		try {
+			if (!this.vnp_HashSecret || !this.vnp_TmnCode || !this.vnp_Url || !this.vnp_ReturnUrl) {
+				throw new Error("Missing VNPay configuration");
+			}
 			const { billId, userId, contractId, totalAmount, ipAddress } = data;
 
 			// Kiểm tra hóa đơn
@@ -57,37 +73,20 @@ class PaymentService {
 
 			// Thông tin VNPay
 			const vnp_Params = {
-				vnp_Version: "2.1.0",
-				vnp_Command: "pay",
-				vnp_TmnCode: this.vnp_TmnCode,
-				vnp_Locale: "vn",
-				vnp_CurrCode: "VND",
 				vnp_TxnRef: transactionCode,
 				vnp_OrderInfo: `Thanh toan hoa don tien phong ${bill.room_id}`,
 				vnp_OrderType: "billpayment",
 				vnp_Amount: totalAmount * 100, // Nhân 100 vì VNPay yêu cầu số tiền * 100
-				vnp_ReturnUrl: this.vnp_ReturnUrl,
 				vnp_IpAddr: ipAddress,
+				vnp_ReturnUrl: this.vnp_ReturnUrl,
+				vnp_Locale: "vn",
 				vnp_CreateDate: moment().format("YYYYMMDDHHmmss"),
+				vnp_CurrCode: "VND",
+
 			};
 
-			// Sắp xếp các tham số theo thứ tự a-z
-			const sortedParams = this.sortObject(vnp_Params);
+			const paymentUrl = this.vnpay.buildPaymentUrl(vnp_Params)
 
-			// Tạo chuỗi ký tự cần ký
-			const signData = qs.stringify(sortedParams, { encode: false });
-
-			// Tạo chữ ký
-			const hmac = crypto.createHmac("sha512", this.vnp_HashSecret);
-			const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
-			// Thêm chữ ký vào params
-			sortedParams.vnp_SecureHash = signed;
-
-			// Tạo URL thanh toán
-			const paymentUrl = `${this.vnp_Url}?${qs.stringify(sortedParams, {
-				encode: false,
-			})}`;
 
 			return {
 				paymentUrl,
