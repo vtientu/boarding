@@ -12,7 +12,7 @@ const seedDatabase = async () => {
 	try {
 		// Kết nối database
 		await mongoose.connect(
-			process.env.MONGODB_URI || "mongodb://localhost:27017/Boarding_Houses",
+			"mongodb+srv://admin:ahsctHaMFUCqF5Wz@boardinghousedb.xl75wyb.mongodb.net/?retryWrites=true&w=majority&appName=BoardingHouseDB",
 		);
 
 		// Xóa dữ liệu cũ
