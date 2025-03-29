@@ -8,13 +8,11 @@ router.use(authMiddleware);
 router.use(roleMiddleware(["Owner"]));
 
 // Room Management
-router.get("/rooms", ownerController.manageRooms);
+router.get("/rooms", ownerController.manageRooms); // done
 
-// Tenant Management
-router.get("/tenants", ownerController.manageTenants);
-router.post("/tenants", ownerController.manageTenants);
-router.put("/tenants/:id", ownerController.manageTenants);
-router.delete("/tenants/:id", ownerController.manageTenants);
+// Tenant Management - done
+router.post("/tenants", ownerController.manageTenants); // done
+router.delete("/tenants/:id", ownerController.manageTenants); // done
 
 // Bill Management
 router.get("/bills", ownerController.manageBills);

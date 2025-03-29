@@ -1,7 +1,7 @@
 const socketIO = require("socket.io");
 const jwt = require("jsonwebtoken");
-const User = require("./models/User");
-const ChatMessage = require("./models/ChatMessage");
+const User = require("../models/User");
+const ChatMessage = require("../models/ChatMessage");
 const mongoose = require("mongoose");
 
 // Lưu trữ người dùng đang kết nối

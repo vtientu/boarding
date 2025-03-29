@@ -110,7 +110,7 @@ const registerOwner = async (req, res) => {
 		);
 
 		// Gửi email chào mừng
-		await sendWelcomeEmail(newUser.email, newUser.name, "Owner");
+		// await sendWelcomeEmail(newUser.email, newUser.name, "Owner");
 
 		// Trả về response
 		return res.status(201).json({
@@ -303,12 +303,12 @@ const forgotPassword = async (req, res) => {
       Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
     `;
 
-		// Sử dụng service để gửi email
-		await sendPasswordResetEmail(user.email, user.name, resetURL);
+		// // Sử dụng service để gửi email
+		// await sendPasswordResetEmail(user.email, user.name, resetURL);
 
-		res.status(200).json({
-			msg: "Email đặt lại mật khẩu đã được gửi",
-		});
+		// res.status(200).json({
+		// 	msg: "Email đặt lại mật khẩu đã được gửi",
+		// });
 	} catch (error) {
 		console.error("Forgot password error:", error);
 		return res.status(500).json({

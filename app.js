@@ -20,7 +20,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 app.use(express.json());
 
 app.use(cors());
-initTransporter();
+// initTransporter();
 
 app.use("/users", mainRouter);
 app.use("/owners", ownerRouter);
