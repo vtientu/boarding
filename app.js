@@ -29,7 +29,11 @@ const roomRoutes = require("./routes/roomRoutes");
 const chatRoutes = require("./routes/chat");
 const paymentRoutes = require("./routes/paymentRoutes");
 
-// Định nghĩa API routes
+app.use(express.json());
+
+app.use(cors());
+// initTransporter();
+
 app.use("/users", mainRouter);
 app.use("/owners", ownerRouter);
 app.use("/tenants", tenantRouter);

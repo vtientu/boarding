@@ -28,12 +28,10 @@ exports.manageTenants = async (req, res) => {
 		const { action } = req.query;
 
 		switch (action) {
-			case "add":
-				return await addTenant(req, res);
-			case "update":
-				return await updateTenant(req, res);
-			case "delete":
-				return await deleteTenant(req, res);
+			case "assignToRoom":
+				return await assignTenantToRoom(req, res);
+			case "removeFromRoom":
+				return await removeTenantFromRoom(req, res);
 			default:
 				const tenants = await User.find({
 					role_id: await Role.findOne({ role_name: "Tenant" })._id,
@@ -45,68 +43,42 @@ exports.manageTenants = async (req, res) => {
 	}
 };
 
-async function addTenant(req, res) {
-	const { name, phone, address, age, gender, room_id } = req.body;
+async function assignTenantToRoom(req, res) {
+	const { tenant_id, room_id } = req.body;
 
-	const newTenant = new User({
-		name,
-		phone,
-		address,
-		age,
-		gender,
-		role_id: await Role.findOne({ role_name: "Tenant" })._id,
-	});
-
-	await newTenant.save();
-
-	// Optionally assign to a room
-	if (room_id) {
-		await Room.findByIdAndUpdate(room_id, {
-			tenant_id: newTenant._id,
-			status: "Occupied",
-		});
+	// Verify tenant exists
+	const tenant = await User.findById(tenant_id);
+	if (!tenant) {
+		return res.status(404).json({ message: "Tenant not found" });
 	}
 
-	res.status(201).json(newTenant);
-}
-
-async function updateTenant(req, res) {
-	const { id } = req.params;
-	const { name, phone, address, age, gender, room_id } = req.body;
-
-	const updatedTenant = await User.findByIdAndUpdate(
-		id,
-		{ name, phone, address, age, gender },
+	// Update room with tenant
+	const updatedRoom = await Room.findByIdAndUpdate(
+		room_id,
+		{
+			tenant_id: tenant_id,
+			status: "Occupied",
+		},
 		{ new: true },
 	);
 
-	// Update room assignment if needed
-	if (room_id) {
-		await Room.findByIdAndUpdate(room_id, {
-			tenant_id: updatedTenant._id,
-			status: "Occupied",
-		});
-	}
-
-	res.json(updatedTenant);
+	res.json(updatedRoom);
 }
 
-async function deleteTenant(req, res) {
-	const { id } = req.params;
+async function removeTenantFromRoom(req, res) {
+	const { room_id } = req.body;
 
-	// Remove tenant from room
-	await Room.updateMany(
-		{ tenant_id: id },
+	// Update room to available
+	const updatedRoom = await Room.findByIdAndUpdate(
+		room_id,
 		{
 			tenant_id: null,
 			status: "Available",
 		},
+		{ new: true },
 	);
 
-	// Delete tenant
-	await User.findByIdAndDelete(id);
-
-	res.json({ message: "Tenant deleted successfully" });
+	res.json(updatedRoom);
 }
 
 exports.manageBills = async (req, res) => {
