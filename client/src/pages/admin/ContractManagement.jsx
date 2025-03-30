@@ -23,7 +23,7 @@ const ContractManagement = () => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("");
   const [selectedContract, setSelectedContract] = useState(null);
   const [expandedContractId, setExpandedContractId] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -62,7 +62,12 @@ const ContractManagement = () => {
       try {
         setLoading(true);
         // Lấy danh sách phòng trước
-        const roomsResponse = await api.get("/rooms");
+        const roomsResponse = await api.get("/rooms", {
+          params: {
+            search: searchTerm,
+            status: filterStatus,
+          },
+        });
         if (!roomsResponse?.data?.data) {
           throw new Error("Không thể lấy danh sách phòng");
         }
@@ -71,12 +76,10 @@ const ContractManagement = () => {
         // Lấy hợp đồng cho từng phòng
         const contractsPromises = rooms.map(async (room) => {
           if (!room || !room._id) {
-            console.warn("Invalid room data:", room);
             return [];
           }
           try {
             const response = await api.get(`/contracts/room/${room._id}`);
-            console.log(`Response for room ${room._id}:`, response);
 
             // Kiểm tra response và data
             if (!response || !response.data) {
@@ -141,13 +144,13 @@ const ContractManagement = () => {
     };
 
     fetchContracts();
-  }, []);
+  }, [filterStatus, searchTerm]);
 
   const filterOptions = [
-    { value: "all", label: "Tất cả trạng thái" },
-    { value: "Active", label: "Đang hoạt động" },
-    { value: "Expired", label: "Đã hết hạn" },
-    { value: "Terminated", label: "Đã hủy" },
+    { value: "", label: "Tất cả trạng thái" },
+    { value: "Available", label: "Đang hoạt động" },
+    { value: "Occupied", label: "Đã thuê" },
+    { value: "Maintenance", label: "Đang bảo trì" },
   ];
 
   const handleCreateContract = async (formData) => {

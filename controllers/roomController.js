@@ -17,6 +17,7 @@ const getAllRooms = async (req, res) => {
 			sort,
 			page = 1,
 			limit = 10,
+			search,
 		} = req.query;
 
 		const query = {};
@@ -42,6 +43,14 @@ const getAllRooms = async (req, res) => {
 			if (max_price) {
 				query.month_rent.$lte = parseInt(max_price);
 			}
+		}
+
+		// Filter theo từ khóa
+		if (search) {
+			query.$or = [
+				{ room_number: { $regex: search, $options: "i" } },
+				{ description: { $regex: search, $options: "i" } },
+			];
 		}
 
 		// Filter theo boarding_house_id

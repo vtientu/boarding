@@ -167,7 +167,7 @@ const registerTenant = async (req, res) => {
 		}
 
 		// Lấy dữ liệu từ request
-		const { name, username, email, password, phone, address, age, gender } =
+		const { name, username, email, password, phone, address, age, gender = 'Other' } =
 			req.body;
 
 		// Kiểm tra dữ liệu đầu vào
