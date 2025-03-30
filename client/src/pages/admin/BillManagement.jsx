@@ -260,25 +260,25 @@ const BillManagement = () => {
                                   <div className="detail-item">
                                     <span className="label">Tiền phòng:</span>
                                     <span className="value">
-                                      {bill.room_price.toLocaleString()}đ
+                                      {bill.room_price?.toLocaleString()||0}đ
                                     </span>
                                   </div>
                                   <div className="detail-item">
                                     <span className="label">Tiền điện:</span>
                                     <span className="value">
-                                      {bill.electricity.toLocaleString()}đ
+                                      {bill.electricity?.toLocaleString()||0}đ
                                     </span>
                                   </div>
                                   <div className="detail-item">
                                     <span className="label">Tiền nước:</span>
                                     <span className="value">
-                                      {bill.water.toLocaleString()}đ
+                                      {bill.water?.toLocaleString()||0}đ
                                     </span>
                                   </div>
                                   <div className="detail-item">
                                     <span className="label">Dịch vụ khác:</span>
                                     <span className="value">
-                                      {bill.additional_services.toLocaleString()}
+                                      {bill.additional_services?.toLocaleString()||0}đ
                                       đ
                                     </span>
                                   </div>

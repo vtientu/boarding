@@ -504,7 +504,7 @@ const getUserList = async (req, res) => {
 
 const getTenantCombo = async (req, res) => {
 	try {
-		const tenantRole = await Role.findOne({ role_name: "Tenant", status: "active" });
+		const tenantRole = await Role.findOne({ role_name: "Tenant" });
 		if (!tenantRole) {
 			return res.status(404).json({ msg: "Không tìm thấy role Tenant" });
 		}
