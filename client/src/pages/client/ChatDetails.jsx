@@ -6,6 +6,7 @@ import axios from "axios";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import EmojiPicker, { Emoji } from "emoji-picker-react";
+import UserSidebar from "../../components/UserSidebar";
 
 const ChatDetails = () => {
   const { id } = useParams();
@@ -14,13 +15,7 @@ const ChatDetails = () => {
   const [messageContent, setMessageContent] = useState("");
   const [receiver, setReceiver] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    pages: 1,
-  });
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const getReceiver = async () => {
     const authToken = JSON.parse(localStorage.getItem("auth")) || "";
@@ -86,7 +81,7 @@ const ChatDetails = () => {
     <div className="dashboard-container">
       <Header />
       <div className="dashboard-content">
-        <Sidebar />
+        {user.role_id.role_name === "Tenant" ? <UserSidebar /> : <Sidebar />}
         <div className="main-content">
           <div className="bill-management">
             <div className="bill-header">

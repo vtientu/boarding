@@ -6,16 +6,12 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import NewChatModal from "../../components/NewChatModal";
 import { useNavigate } from "react-router-dom";
+import UserSidebar from "../../components/UserSidebar";
 
 const Chat = () => {
   const navigate = useNavigate();
   const [conversation, setConversation] = useState([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    pages: 1,
-  });
+  const user = JSON.parse(localStorage.getItem("user"));
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
 
   useEffect(() => {
@@ -37,7 +33,7 @@ const Chat = () => {
     <div className="dashboard-container">
       <Header />
       <div className="dashboard-content">
-        <Sidebar />
+        {user.role_id.role_name === "Tenant" ? <UserSidebar /> : <Sidebar />}
         <main className="main-content">
           <div className="bill-management">
             <div className="bill-header">

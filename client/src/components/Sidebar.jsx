@@ -4,74 +4,33 @@ import "../styles/Sidebar.css";
 
 const Sidebar = () => {
   const location = useLocation();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user.role_id.role_name === "Owner";
 
+  const menuItems = [
+    { path: "/dashboard", label: "Trang chủ" },
+    { path: "/boarding-houses", label: "QL Nhà trọ" },
+    { path: "/rooms", label: "QL Phòng trọ" },
+    { path: "/tenants", label: "QL người thuê" },
+    { path: "/contracts", label: "QL Hợp đồng" },
+    { path: "/bills", label: "Quản lý hoá đơn" },
+    { path: "/reports", label: "Báo cáo" },
+    { path: "/chat", label: "Chat" },
+  ];
   return (
     <div className="sidebar">
       <nav className="sidebar-nav">
-        <Link
-          to="/dashboard"
-          className={`nav-item ${
-            location.pathname === "/dashboard" ? "active" : ""
-          }`}
-        >
-          Trang chủ
-        </Link>
-        <Link
-          to="/boarding-houses"
-          className={`nav-item ${
-            location.pathname === "/boarding-houses" ? "active" : ""
-          }`}
-        >
-          QL Nhà trọ
-        </Link>
-        <Link
-          to="/rooms"
-          className={`nav-item ${
-            location.pathname === "/rooms" ? "active" : ""
-          }`}
-        >
-          QL Phòng trọ
-        </Link>
-        <Link
-          to="/tenants"
-          className={`nav-item ${
-            location.pathname === "/tenants" ? "active" : ""
-          }`}
-        >
-          QL người thuê
-        </Link>
-        <Link
-          to="/contracts"
-          className={`nav-item ${
-            location.pathname === "/contracts" ? "active" : ""
-          }`}
-        >
-          QL Hợp đồng
-        </Link>
-        <Link
-          to="/bills"
-          className={`nav-item ${
-            location.pathname === "/bills" ? "active" : ""
-          }`}
-        >
-          Quản lý hoá đơn
-        </Link>
-        <Link
-          to="/reports"
-          className={`nav-item ${
-            location.pathname === "/reports" ? "active" : ""
-          }`}
-        >
-          Báo cáo
-        </Link>
-        <Link
-          to="/chat"
-          className={`nav-item ${
-            location.pathname === "/chat" ? "active" : ""
-          }`}
-        >
-          Chat
-        </Link>
+        {(isAdmin ? menuItems : []).map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`nav-item ${
+              location.pathname === item.path ? "active" : ""
+            }`}
+          >
+            <span className="nav-item-label">{item.label}</span>
+          </Link>
+        ))}
       </nav>
     </div>
   );
