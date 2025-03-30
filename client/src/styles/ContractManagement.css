@@ -56,13 +56,52 @@
 .contracts-table table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .contracts-table th,
 .contracts-table td {
   padding: 1rem;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contracts-table th:nth-child(1),
+.contracts-table td:nth-child(1) {
+  width: 10%;
+}
+
+.contracts-table th:nth-child(2),
+.contracts-table td:nth-child(2) {
+  width: 15%;
+}
+
+.contracts-table th:nth-child(3),
+.contracts-table td:nth-child(3) {
+  width: 15%;
+}
+
+.contracts-table th:nth-child(4),
+.contracts-table td:nth-child(4) {
+  width: 15%;
+}
+
+.contracts-table th:nth-child(5),
+.contracts-table td:nth-child(5) {
+  width: 15%;
+}
+
+.contracts-table th:nth-child(6),
+.contracts-table td:nth-child(6) {
+  width: 15%;
+}
+
+.contracts-table th:nth-child(7),
+.contracts-table td:nth-child(7) {
+  width: 15%;
 }
 
 .contracts-table th {
@@ -70,6 +109,9 @@
   font-weight: 600;
   color: #2c3e50;
   font-size: 0.95rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .contracts-table tr:hover {
@@ -79,6 +121,32 @@
 .contracts-table td {
   color: #2c3e50;
   font-size: 0.95rem;
+  height: 60px;
+  vertical-align: middle;
+}
+
+/* Căn giữa các phần tử con trong cell */
+.contracts-table td > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Style cho room type và tenant phone */
+.room-type,
+.tenant-phone {
+  font-size: 0.85rem;
+  color: #666;
+  display: block;
+  text-align: center;
+}
+
+.contracts-table td:nth-child(1),
+.contracts-table td:nth-child(5),
+.contracts-table td:nth-child(6),
+.contracts-table td:nth-child(7) {
+  text-align: center;
 }
 
 /* Status Badge */
@@ -472,6 +540,16 @@
   .contracts-table {
     display: block;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .contracts-table table {
+    min-width: 1000px;
+  }
+
+  .contracts-table th,
+  .contracts-table td {
+    padding: 0.8rem;
   }
 }
 
@@ -496,10 +574,13 @@
     justify-content: center;
   }
 
-  .contracts-table th,
   .contracts-table td {
-    padding: 0.8rem;
-    font-size: 0.9rem;
+    height: 50px;
+    padding: 0.6rem;
+  }
+
+  .contracts-table th {
+    padding: 0.8rem 0.6rem;
   }
 
   .action-buttons {
