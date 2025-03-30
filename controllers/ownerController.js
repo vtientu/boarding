@@ -181,13 +181,28 @@ exports.sendNotification = async (req, res) => {
 
 exports.getBills = async (req, res) => {
 	try {
+		const { status, search } = req.query;
+		const query = {};
+
+		if (status) {
+			query.status = status;
+		}
+
 		// const { page = 1, limit = 10 } = req.query;
 
 		// const skip = (page - 1) * limit;
-		const bills = await Bill.find()
+		let bills = await Bill.find(query)
 			.populate("room_id", "_id room_number room_type")
-			.populate("tenant_id", "_id name phone address")
-			.select("-__v");
+			.populate("tenant_id", "_id name phone address");
+
+		if (search) {
+			bills = bills.filter(
+				(bill) =>
+					bill.tenant_id?.name?.toLowerCase().includes(search.toLowerCase()) ||
+					bill.room_id?.room_number?.toLowerCase().includes(search.toLowerCase())
+			);
+		}
+
 
 
 		const totalBills = await Bill.countDocuments({
@@ -262,8 +277,8 @@ exports.deleteUser = async (req, res) => {
 		// Kiểm tra xem user có phải là chủ trọ không
 		const userRole = await Role.findById(userToDelete.role_id);
 		if (userRole?.role_name === "Owner") {
-			return res.status(403).json({ 
-				msg: "Không thể xóa tài khoản chủ trọ" 
+			return res.status(403).json({
+				msg: "Không thể xóa tài khoản chủ trọ"
 			});
 		}
 
@@ -274,22 +289,22 @@ exports.deleteUser = async (req, res) => {
 		});
 
 		if (activeContract) {
-			return res.status(400).json({ 
-				msg: "Không thể xóa người dùng đang có hợp đồng thuê phòng" 
+			return res.status(400).json({
+				msg: "Không thể xóa người dùng đang có hợp đồng thuê phòng"
 			});
 		}
 
 		// Xóa user
 		await User.findByIdAndDelete(userId);
 
-		res.status(200).json({ 
-			msg: "Xóa người dùng thành công" 
+		res.status(200).json({
+			msg: "Xóa người dùng thành công"
 		});
 	} catch (error) {
 		console.error("Error in deleteUser:", error);
-		res.status(500).json({ 
+		res.status(500).json({
 			msg: "Lỗi server khi xóa người dùng",
-			error: error.message 
+			error: error.message
 		});
 	}
 };

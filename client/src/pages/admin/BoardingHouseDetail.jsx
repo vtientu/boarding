@@ -125,7 +125,15 @@ const BoardingHouseDetail = () => {
 
   useEffect(() => {
     fetchRooms();
-  }, [id, pagination.page, filterStatus, filterRoomType, minPrice, maxPrice, searchTerm]);
+  }, [
+    id,
+    pagination.page,
+    filterStatus,
+    filterRoomType,
+    minPrice,
+    maxPrice,
+    searchTerm,
+  ]);
 
   const handleUpdateBoardingHouse = async (updatedData) => {
     try {
@@ -189,18 +197,14 @@ const BoardingHouseDetail = () => {
         month_rent: parseInt(roomData.month_rent),
         description: roomData.description || "",
         address: roomData.address || boardingHouse.location,
-        boarding_house_id: id
+        boarding_house_id: id,
       };
 
-      await axios.post(
-        "http://localhost:3000/rooms/create",
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post("http://localhost:3000/rooms/create", formattedData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       fetchRooms();
       setIsAddRoomModalOpen(false);
     } catch (err) {
@@ -210,11 +214,15 @@ const BoardingHouseDetail = () => {
 
   const handleEditRoom = async (roomId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/rooms/detail/${roomId}`);
+      const response = await axios.get(
+        `http://localhost:3000/rooms/detail/${roomId}`
+      );
       setSelectedRoom(response.data.room);
       setIsEditRoomModalOpen(true);
     } catch (err) {
-      setError(err.response?.data?.msg || "Có lỗi xảy ra khi tải thông tin phòng");
+      setError(
+        err.response?.data?.msg || "Có lỗi xảy ra khi tải thông tin phòng"
+      );
     }
   };
 
@@ -328,12 +336,18 @@ const BoardingHouseDetail = () => {
                 <button
                   className="edit-btn"
                   onClick={() => setIsEditModalOpen(true)}
+                  style={{
+                    color: "white",
+                  }}
                 >
                   Sửa thông tin
                 </button>
                 <button
                   className="delete-btn"
                   onClick={handleDeleteBoardingHouse}
+                  style={{
+                    color: "white",
+                  }}
                 >
                   Xóa nhà trọ
                 </button>
@@ -366,7 +380,7 @@ const BoardingHouseDetail = () => {
               <div className="rooms-section">
                 <div className="section-header">
                   <h3>Danh sách phòng</h3>
-                  <button 
+                  <button
                     className="add-btn"
                     onClick={() => setIsAddRoomModalOpen(true)}
                   >
@@ -409,7 +423,9 @@ const BoardingHouseDetail = () => {
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">Tổng thu nhập:</span>
-                    <span className="stat-value">{formatCurrency(stats.totalMonthlyIncome)}</span>
+                    <span className="stat-value">
+                      {formatCurrency(stats.totalMonthlyIncome)}
+                    </span>
                   </div>
                 </div>
 
@@ -441,8 +457,11 @@ const BoardingHouseDetail = () => {
                               <span
                                 className={`status ${room.status.toLowerCase()}`}
                               >
-                                {room.status === "Available" ? "Trống" : 
-                                 room.status === "Occupied" ? "Đã thuê" : "Đang sửa"}
+                                {room.status === "Available"
+                                  ? "Trống"
+                                  : room.status === "Occupied"
+                                  ? "Đã thuê"
+                                  : "Đang sửa"}
                               </span>
                             </td>
                             <td>

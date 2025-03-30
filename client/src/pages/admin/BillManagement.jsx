@@ -48,7 +48,12 @@ const BillManagement = () => {
     const fetchBills = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/owners/bills");
+        const response = await api.get("/owners/bills", {
+          params: {
+            status: filterStatus,
+            search: searchTerm,
+          },
+        });
         setBills(response.data.data);
       } catch (err) {
         console.error("Error fetching bills:", err);
@@ -59,7 +64,7 @@ const BillManagement = () => {
     };
 
     fetchBills();
-  }, []);
+  }, [filterStatus, searchTerm]);
 
   const unpaidTenants = bills.filter(
     (bill) => !bill.payment_status || bill.payment_status === "Pending"
@@ -67,18 +72,14 @@ const BillManagement = () => {
 
   const filterOptions = [
     { value: "", label: "Tất cả trạng thái" },
-    { value: "paid", label: "Đã thanh toán" },
-    { value: "unpaid", label: "Chưa thanh toán" },
+    { value: "Pending", label: "Chờ thanh toán" },
+    { value: "Paid", label: "Đã thanh toán" },
+    { value: "Overdue", label: "Quá hạn" },
   ];
 
   const handleCreateBill = () => {
     // TODO: Implement create bill functionality
     setIsUpdateModalOpen(true);
-  };
-
-  const handlePrintBill = (bill) => {
-    // TODO: Implement print bill functionality
-    toast.info("Tính năng đang được phát triển");
   };
 
   const handleViewBill = (bill) => {
@@ -220,10 +221,10 @@ const BillManagement = () => {
                           <td>
                             <span
                               className={`status-badge ${
-                                bill.payment_status?.toLowerCase() || "pending"
+                                bill.status?.toLowerCase() || "pending"
                               }`}
                             >
-                              {bill.payment_status || "Chưa thanh toán"}
+                              {bill.status || "Chưa thanh toán"}
                             </span>
                           </td>
                           <td>
