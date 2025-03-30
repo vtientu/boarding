@@ -1,27 +1,21 @@
 .room-management {
-  padding: 24px;
+  padding: 2rem;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.room-header {
+.room-management-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f2f5;
+  margin-bottom: 2rem;
 }
 
-.room-header h2 {
-  font-size: 1.8rem;
+.room-management-header h2 {
   margin: 0;
-  font-weight: 600;
-  background: linear-gradient(90deg, #00695c, #009688);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #333;
+  font-size: 1.8rem;
 }
 
 .header-buttons {
@@ -31,53 +25,56 @@
 }
 
 .add-room-btn {
-  padding: 10px 20px;
-  height: 40px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #00695c 0%, #009688 100%);
+  background-color: #4CAF50;
   color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
 }
 
 .add-room-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 150, 136, 0.4);
+  background-color: #45a049;
 }
 
 .rooms-table {
-  overflow-x: auto;
-  margin: 20px 0;
-  background: white;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.rooms-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1200px;
+  min-width: 1000px;
 }
 
 th, td {
-  padding: 12px 16px;
+  padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 
 th {
-  background-color: #f9fafb;
+  background-color: #f8f9fa;
   font-weight: 600;
-  color: #374151;
-  white-space: nowrap;
+  color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 td {
@@ -89,18 +86,11 @@ th:nth-child(1), td:nth-child(1) { width: 100px; } /* Số phòng */
 th:nth-child(2), td:nth-child(2) { width: 120px; } /* Loại phòng */
 th:nth-child(3), td:nth-child(3) { width: 120px; } /* Giá thuê */
 th:nth-child(4), td:nth-child(4) { width: 100px; } /* Số người */
-th:nth-child(5), td:nth-child(5) { width: 200px; } /* Địa chỉ */
-th:nth-child(6), td:nth-child(6) { width: 200px; } /* Mô tả */
-th:nth-child(7), td:nth-child(7) { width: 150px; } /* Nhà trọ */
-th:nth-child(8), td:nth-child(8) { width: 250px; } /* Tên người thuê */
-th:nth-child(9), td:nth-child(9) { width: 120px; } /* Trạng thái */
-th:nth-child(10), td:nth-child(10) { width: 120px; } /* Thao tác */
+th:nth-child(5), td:nth-child(5) { width: 120px; } /* Trạng thái */
+th:nth-child(6), td:nth-child(6) { width: 200px; } /* Thao tác */
 
 /* Truncate long text */
-td:nth-child(5), /* Địa chỉ */
-td:nth-child(6), /* Mô tả */
-td:nth-child(7), /* Nhà trọ */
-td:nth-child(8) { /* Tên người thuê */
+td:nth-child(2) { /* Loại phòng */
   max-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -137,7 +127,6 @@ td:nth-child(2) {
 
 tr:hover {
   background-color: #f8f9fa;
-  transition: background-color 0.3s ease;
 }
 
 .status-badge {
@@ -163,29 +152,57 @@ tr:hover {
 
 .action-buttons {
   display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: nowrap; /* Prevent wrapping */
+  gap: 0.5rem;
 }
 
-.edit-btn, .delete-btn {
-  padding: 6px 12px;
-  min-width: 50px; /* Giảm min-width của buttons */
-  font-size: 0.85rem;
-  white-space: nowrap;
+.view-btn,
+.edit-btn,
+.delete-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.view-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.view-btn:hover {
+  background-color: #1976D2;
+}
+
+.edit-btn {
+  background-color: #FFC107;
+  color: #000;
+}
+
+.edit-btn:hover {
+  background-color: #FFA000;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .room-management {
-    padding: 16px;
+    padding: 1rem;
   }
 
-  .room-header {
+  .room-management-header {
     flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+    gap: 1rem;
+    text-align: center;
   }
 
   .header-buttons {
@@ -201,8 +218,13 @@ tr:hover {
   }
 
   .rooms-table {
-    margin: 0 -16px;
+    margin: 0;
     border-radius: 0;
+  }
+
+  .rooms-table-container {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
   }
 
   table {
@@ -210,65 +232,58 @@ tr:hover {
   }
 
   th, td {
-    padding: 8px;
-    font-size: 0.85rem;
+    padding: 0.8rem;
+    font-size: 0.9rem;
   }
 
   .action-buttons {
+    flex-direction: row;
+    flex-wrap: nowrap;
     gap: 4px;
   }
 
-  .edit-btn, .delete-btn {
-    padding: 4px 8px;
-    min-width: 40px;
+  .view-btn,
+  .edit-btn,
+  .delete-btn {
+    padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
-  }
-
-  .tenant-info {
-    font-size: 0.8rem;
-  }
-
-  .tenant-contact, .contract-dates {
-    font-size: 0.75rem;
+    white-space: nowrap;
   }
 }
 
 .loading {
   text-align: center;
-  padding: 20px;
-  font-size: 1.1rem;
+  padding: 2rem;
   color: #666;
 }
 
 .error-message {
-  background-color: #fee2e2;
-  color: #dc2626;
-  padding: 12px;
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
   border-radius: 4px;
-  margin: 16px 0;
-  font-size: 0.9rem;
+  margin: 1rem 0;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .pagination button {
-  padding: 8px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
   background-color: white;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
   transition: all 0.2s;
 }
 
 .pagination button:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background-color: #f8f9fa;
 }
 
 .pagination button:disabled {
@@ -277,7 +292,6 @@ tr:hover {
 }
 
 .pagination span {
-  font-size: 0.9rem;
   color: #666;
 }
 

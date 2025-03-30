@@ -394,39 +394,119 @@ const resetPassword = async (req, res) => {
 };
 
 const getUserList = async (req, res) => {
-	const { page = 1, limit = 10, role, search } = req.query;
+	try {
+		const {
+			page = 1,
+			limit = 10,
+			role,
+			search,
+			status,
+			gender,
+			age,
+			phone,
+			address,
+			sortBy = "createdAt",
+			sortOrder = "desc",
+		} = req.query;
 
-	const skip = (page - 1) * limit;
+		const skip = (page - 1) * limit;
 
-	const query = {};
+		// Xây dựng query
+		const query = {};
 
-	if (role) {
-		query.role = role;
+		// Lọc theo role
+		if (role) {
+			const roleDoc = await Role.findOne({ role_name: role });
+			if (roleDoc) {
+				query.role_id = roleDoc._id;
+			}
+		}
+
+		// Lọc theo trạng thái
+		if (status) {
+			query.status = status;
+		}
+
+		// Lọc theo giới tính
+		if (gender) {
+			query.gender = gender;
+		}
+
+		// Lọc theo tuổi
+		if (age) {
+			query.age = parseInt(age);
+		}
+
+		// Lọc theo số điện thoại
+		if (phone) {
+			query.phone = { $regex: phone, $options: "i" };
+		}
+
+		// Lọc theo địa chỉ
+		if (address) {
+			query.address = { $regex: address, $options: "i" };
+		}
+
+		// Tìm kiếm theo nhiều trường
+		if (search) {
+			query.$or = [
+				{ name: { $regex: search, $options: "i" } },
+				{ username: { $regex: search, $options: "i" } },
+				{ email: { $regex: search, $options: "i" } },
+				{ phone: { $regex: search, $options: "i" } },
+				{ address: { $regex: search, $options: "i" } },
+			];
+		}
+
+		// Xây dựng options cho sort
+		const sortOptions = {};
+		sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+		// Thực hiện query với populate và sort
+		const users = await User.find(query)
+			.select("-password")
+			.populate("role_id", "role_name permissions")
+			.sort(sortOptions)
+			.skip(skip)
+			.limit(parseInt(limit));
+
+		// Đếm tổng số kết quả
+		const total = await User.countDocuments(query);
+
+		// Tính toán phân trang
+		const pagination = {
+			total,
+			page: parseInt(page),
+			limit: parseInt(limit),
+			pages: Math.ceil(total / limit),
+		};
+
+		// Trả về kết quả
+		res.status(200).json({
+			users,
+			pagination,
+			filters: {
+				role,
+				status,
+				gender,
+				age,
+				phone,
+				address,
+				search,
+			},
+			sort: {
+				by: sortBy,
+				order: sortOrder,
+			},
+		});
+	} catch (error) {
+		console.error("Error in getUserList:", error);
+		res.status(500).json({
+			msg: "Lỗi server khi lấy danh sách người dùng",
+			error: error.message,
+		});
 	}
-
-	if (search) {
-		query.$or = [
-			{ name: { $regex: search, $options: "i" } },
-			{ username: { $regex: search, $options: "i" } },
-			{ email: { $regex: search, $options: "i" } },
-		];
-	}
-
-	const users = await User.find(query)
-		.select("-password")
-		.skip(skip)
-		.limit(limit);
-
-	const total = await User.countDocuments(query);
-
-	const pagination = {
-		total,
-		page: parseInt(page),
-		limit: parseInt(limit),
-	};
-
-	res.status(200).json({ users, pagination });
-}
+};
 
 const getUserById = async (req, res) => {
 	const { userId } = req.params;

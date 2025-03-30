@@ -3,12 +3,13 @@ import "../styles/AddRoomModal.css";
 
 const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 	const [roomData, setRoomData] = useState({
-		id: "",
-		price: "",
-		type: "Đơn", // giá trị mặc định
+		room_number: "",
+		room_type: "Deluxe",
+		status: "Available",
 		capacity: "",
-		status: "Trống", // giá trị mặc định
-		tenant: "",
+		month_rent: "",
+		description: "",
+		address: "",
 	});
 
 	const handleChange = (e) => {
@@ -24,12 +25,13 @@ const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 		onSubmit(roomData);
 		setRoomData({
 			// Reset form
-			id: "",
-			price: "",
-			type: "Đơn",
+			room_number: "",
+			room_type: "Deluxe",
+			status: "Available",
 			capacity: "",
-			status: "Trống",
-			tenant: "",
+			month_rent: "",
+			description: "",
+			address: "",
 		});
 	};
 
@@ -44,8 +46,8 @@ const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 						<label>Số phòng:</label>
 						<input
 							type="text"
-							name="id"
-							value={roomData.id}
+							name="room_number"
+							value={roomData.room_number}
 							onChange={handleChange}
 							required
 						/>
@@ -54,9 +56,9 @@ const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 					<div className="form-group">
 						<label>Giá thuê:</label>
 						<input
-							type="text"
-							name="price"
-							value={roomData.price}
+							type="number"
+							name="month_rent"
+							value={roomData.month_rent}
 							onChange={handleChange}
 							required
 						/>
@@ -65,13 +67,14 @@ const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 					<div className="form-group">
 						<label>Loại phòng:</label>
 						<select
-							name="type"
-							value={roomData.type}
+							name="room_type"
+							value={roomData.room_type}
 							onChange={handleChange}
 							required
 						>
-							<option value="Đơn">Đơn</option>
-							<option value="Đôi">Đôi</option>
+							<option value="Deluxe">Deluxe</option>
+							<option value="Standard">Standard</option>
+							<option value="Basic">Basic</option>
 						</select>
 					</div>
 
@@ -94,17 +97,28 @@ const AddRoomModal = ({ isOpen, onClose, onSubmit }) => {
 							onChange={handleChange}
 							required
 						>
-							<option value="Trống">Trống</option>
-							<option value="Đã thuê">Đã thuê</option>
+							<option value="Available">Trống</option>
+							<option value="Occupied">Đã thuê</option>
+							<option value="Maintenance">Đang sửa</option>
 						</select>
 					</div>
 
 					<div className="form-group">
-						<label>Tên người thuê:</label>
+						<label>Mô tả:</label>
+						<textarea
+							name="description"
+							value={roomData.description}
+							onChange={handleChange}
+							rows="3"
+						/>
+					</div>
+
+					<div className="form-group">
+						<label>Địa chỉ:</label>
 						<input
 							type="text"
-							name="tenant"
-							value={roomData.tenant}
+							name="address"
+							value={roomData.address}
 							onChange={handleChange}
 						/>
 					</div>

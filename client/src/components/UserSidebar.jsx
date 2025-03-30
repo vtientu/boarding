@@ -8,7 +8,7 @@ const UserSidebar = () => {
 	const menuItems = [
 		{ path: "/user-dashboard", label: "Trang chủ" },
 		{ path: "/profile", label: "QL thông tin cá nhân" },
-		{ path: "/bills", label: "QL hoá đơn" },
+		{ path: "/payment", label: "QL hoá đơn" },
 		{ path: "/notifications", label: "Thông báo" },
 	];
 

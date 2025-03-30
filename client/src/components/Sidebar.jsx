@@ -41,12 +41,20 @@ const Sidebar = () => {
 					QL người thuê
 				</Link>
 				<Link
+					to="/contracts"
+					className={`nav-item ${
+						location.pathname === "/contracts" ? "active" : ""
+					}`}
+				>
+					QL Hợp đồng
+				</Link>
+				<Link
 					to="/bills"
 					className={`nav-item ${
 						location.pathname === "/bills" ? "active" : ""
 					}`}
 				>
-					QL Thu tiền & hoá đơn
+					Quản lý hoá đơn
 				</Link>
 				<Link
 					to="/reports"
