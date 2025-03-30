@@ -105,7 +105,7 @@ const UserManagement = () => {
           return;
         }
 
-        await axios.delete(`http://localhost:3000/users/delete/${userId}`, {
+        await axios.delete(`http://localhost:3000/owners/tenants/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
