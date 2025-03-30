@@ -15,6 +15,9 @@ router.post("/tenants", ownerController.manageTenants); // done
 router.get("/tenants/:id", ownerController.manageTenants); // done
 router.delete("/tenants/:id", ownerController.manageTenants); // done
 
+// User Management
+router.delete("/users/:userId", ownerController.deleteUser); // Thêm route xóa user
+
 // Bill Management
 router.get("/bills", ownerController.getBills); // OKE
 router.post("/bills/send-notification", ownerController.sendNotification); // OKE
