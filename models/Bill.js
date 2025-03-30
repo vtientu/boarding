@@ -7,7 +7,7 @@ const BillSchema = new mongoose.Schema(
 			ref: "Room",
 			required: true,
 		},
-		user_id: {
+		tenant_id: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
 			required: true,
@@ -37,6 +37,11 @@ const BillSchema = new mongoose.Schema(
 		},
 		image: {
 			type: String,
+		},
+		status: {
+			type: String,
+			enum: ["Pending", "Paid", "Overdue"],
+			default: "Pending",
 		},
 	},
 	{ timestamps: true },

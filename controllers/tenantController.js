@@ -63,3 +63,19 @@ exports.getTenantPaymentHistory = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+exports.getTenantBills = async (req, res) => {
+	try {
+		const bills = await Bill.find({ tenant_id: req.user.id })
+			.select("-__v")
+			.populate("room_id", "_id room_number room_type")
+			.populate("tenant_id", "_id name phone address")
+			.sort({ createdAt: -1 });
+
+		res.status(200).json({ data: bills });
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+

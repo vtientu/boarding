@@ -11,5 +11,6 @@ router.patch("/profile", tenantController.updateTenantProfile); // done
 router.get("/profile", tenantController.getTenantProfile); // done
 router.get("/contracts", tenantController.getTenantContracts); // done
 router.get("/payment-history", tenantController.getTenantPaymentHistory);
+router.get("/bills", tenantController.getTenantBills);
 
 module.exports = router;

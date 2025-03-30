@@ -61,8 +61,24 @@ function initializeSocket(server) {
 			timestamp: new Date(),
 		});
 
+		// Xử lý khi client yêu cầu danh sách người dùng online
+		socket.on("get_online_users", (callback) => {
+			try {
+				// Lấy danh sách người dùng từ Map
+				const onlineUsers = Array.from(connectedUsers.values()).map(socket => (socket.user)).filter(user => user.id?.toString() !== socket.user.id);
+
+				// Gửi danh sách người dùng online về client
+				callback({ status: "success", data: onlineUsers });
+			} catch (error) {
+				console.error("Get online users error:", error);
+				callback({ status: "error", message: error.message });
+			}
+		});
+
+
 		// Tạo hoặc tham gia phòng chat
 		socket.on("join_room", async (receiverId) => {
+			console.log(`Rooms after joining: ${Array.from(socket.rooms)}`);
 			// Tạo chat_room_id từ ID của hai người dùng (đảm bảo ID luôn theo thứ tự để tạo phòng duy nhất)
 			const participants = [socket.user.id, receiverId].sort();
 			const roomId = `chat_${participants[0]}_${participants[1]}`;
@@ -75,7 +91,7 @@ function initializeSocket(server) {
 			await ChatMessage.updateMany(
 				{
 					chat_room_id: roomId,
-					receiver_id: mongoose.Types.ObjectId(socket.user.id),
+					receiver_id: (socket.user.id),
 					is_read: false,
 				},
 				{ is_read: true },
@@ -112,8 +128,8 @@ function initializeSocket(server) {
 					.populate("sender_id", "name username")
 					.populate("receiver_id", "name username");
 
-				// Gửi tin nhắn đến phòng chat
-				io.to(chat_room_id).emit("receive_message", populatedMessage);
+				// Gửi tin nhắn đến phòng chat, ngoại trừ người gửi
+				socket.broadcast.to(chat_room_id).emit("receive_message", populatedMessage);
 
 				// Kiểm tra xem người nhận có online không
 				const receiverSocket = connectedUsers.get(receiver_id);
@@ -129,14 +145,14 @@ function initializeSocket(server) {
 					});
 				}
 
-				// Phản hồi cho người gửi
-				if (callback)
-					callback({ status: "success", message: populatedMessage });
+				// Phản hồi cho người gửi (không gửi lại tin nhắn)
+				if (callback) callback({ status: "success", message: populatedMessage });
 			} catch (error) {
 				console.error("Send message error:", error);
 				if (callback) callback({ status: "error", message: error.message });
 			}
 		});
+
 
 		// Lấy lịch sử tin nhắn
 		socket.on("get_messages", async (data, callback) => {
@@ -150,16 +166,16 @@ function initializeSocket(server) {
 				// Lấy lịch sử tin nhắn với phân trang
 				const messages = await ChatMessage.find({ chat_room_id })
 					.sort({ createdAt: -1 })
-					.skip((page - 1) * limit)
-					.limit(limit)
+					// .skip((page - 1) * limit)
+					// .limit(limit)
 					.populate("sender_id", "name username")
 					.populate("receiver_id", "name username")
-					.sort({ createdAt: 1 }); // Sắp xếp lại theo thời gian tăng dần
+					.sort({ createdAt: -1 }); // Sắp xếp lại theo thời gian giảm dần
 
 				// Số lượng tin nhắn không đọc
 				const unreadCount = await ChatMessage.countDocuments({
 					chat_room_id,
-					receiver_id: mongoose.Types.ObjectId(socket.user.id),
+					receiver_id: (socket.user.id),
 					is_read: false,
 				});
 
@@ -180,20 +196,20 @@ function initializeSocket(server) {
 
 		// Lấy danh sách cuộc trò chuyện
 		socket.on("get_conversations", async (callback) => {
+			console.log(socket.user.id);
+
 			try {
-				// Tìm tất cả cuộc trò chuyện mà người dùng tham gia
+				// Lấy danh sách cuộc trò chuyện có tin nhắn mới nhất
 				const conversations = await ChatMessage.aggregate([
 					{
 						$match: {
 							$or: [
-								{ sender_id: mongoose.Types.ObjectId(socket.user.id) },
-								{ receiver_id: mongoose.Types.ObjectId(socket.user.id) },
+								{ sender_id: new mongoose.Types.ObjectId(socket.user.id) },
+								{ receiver_id: new mongoose.Types.ObjectId(socket.user.id) }
 							],
 						},
 					},
-					{
-						$sort: { createdAt: -1 },
-					},
+					{ $sort: { createdAt: -1 } },
 					{
 						$group: {
 							_id: "$chat_room_id",
@@ -201,69 +217,67 @@ function initializeSocket(server) {
 							unread_count: {
 								$sum: {
 									$cond: [
-										{
-											$and: [
-												{
-													$eq: [
-														"$receiver_id",
-														mongoose.Types.ObjectId(socket.user.id),
-													],
-												},
-												{ $eq: ["$is_read", false] },
-											],
-										},
+										{ $and: [{ $eq: ["$receiver_id", new mongoose.Types.ObjectId(socket.user.id)] }, { $eq: ["$is_read", false] }] },
 										1,
-										0,
+										0
 									],
 								},
 							},
 						},
 					},
-					{
-						$sort: { "last_message.createdAt": -1 },
-					},
+					{ $sort: { "last_message.createdAt": -1 } },
 				]);
 
-				// Lấy thông tin người dùng cho mỗi cuộc trò chuyện
-				const populatedConversations = await Promise.all(
-					conversations.map(async (conv) => {
-						// Xác định ID của người dùng khác trong cuộc trò chuyện
-						const otherUserId =
-							conv.last_message.sender_id.toString() === socket.user.id
-								? conv.last_message.receiver_id
-								: conv.last_message.sender_id;
+				if (!conversations.length) {
+					return callback({ status: "success", data: [] });
+				}
 
-						// Lấy thông tin người dùng
-						const otherUser = await User.findById(otherUserId).select(
-							"_id name username role_id",
-						);
+				// Lấy danh sách ID của người dùng trong cuộc trò chuyện
+				const otherUserIds = conversations.map(conv =>
+					conv.last_message?.sender_id.toString() === socket.user.id
+						? conv.last_message?.receiver_id
+						: conv.last_message?.sender_id
+				).filter(Boolean); // Loại bỏ giá trị null hoặc undefined
 
-						// Lấy thông tin role
-						await otherUser.populate("role_id", "role_name");
+				// Truy vấn tất cả người dùng một lần thay vì gọi findById() nhiều lần
+				const users = await User.find({ _id: { $in: otherUserIds } })
+					.select("_id name username role_id")
+					.populate("role_id", "role_name");
 
-						// Kiểm tra trạng thái online
-						const isOnline = connectedUsers.has(otherUserId.toString());
+				const userMap = new Map(users.map(user => [user._id.toString(), user]));
 
-						return {
-							room_id: conv._id,
-							last_message: {
-								_id: conv.last_message._id,
-								content: conv.last_message.message_content,
-								type: conv.last_message.message_type,
-								sender_id: conv.last_message.sender_id,
-								time: conv.last_message.createdAt,
-							},
-							unread_count: conv.unread_count,
-							contact: {
-								_id: otherUser._id,
-								name: otherUser.name,
-								username: otherUser.username,
-								role: otherUser.role_id.role_name,
-								online: isOnline,
-							},
-						};
-					}),
-				);
+				// Xử lý dữ liệu phản hồi
+				const populatedConversations = conversations.map(conv => {
+					if (!conv.last_message) return null; // Kiểm tra nếu không có tin nhắn nào
+
+					const senderId = conv.last_message.sender_id.toString();
+					const receiverId = conv.last_message.receiver_id.toString();
+
+					// Xác định người dùng khác trong cuộc trò chuyện
+					const otherUserId = senderId === socket.user.id ? receiverId : senderId;
+					const otherUser = userMap.get(otherUserId);
+
+					if (!otherUser) return null;
+
+					return {
+						room_id: conv._id,
+						last_message: {
+							_id: conv.last_message._id,
+							content: conv.last_message.message_content,
+							type: conv.last_message.message_type,
+							sender_id: conv.last_message.sender_id,
+							time: conv.last_message.createdAt,
+						},
+						unread_count: conv.unread_count,
+						contact: {
+							_id: otherUser._id,
+							name: otherUser.name,
+							username: otherUser.username,
+							role: otherUser.role_id.role_name,
+							online: connectedUsers.has(otherUserId),
+						},
+					};
+				}).filter(Boolean); // Loại bỏ giá trị null
 
 				callback({
 					status: "success",
@@ -273,6 +287,7 @@ function initializeSocket(server) {
 				console.error("Get conversations error:", error);
 				callback({ status: "error", message: error.message });
 			}
+
 		});
 
 		// Đánh dấu tin nhắn đã đọc

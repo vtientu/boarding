@@ -3,70 +3,78 @@ import { Link, useLocation } from "react-router-dom";
 import "../styles/Sidebar.css";
 
 const Sidebar = () => {
-	const location = useLocation();
+  const location = useLocation();
 
-	return (
-		<div className="sidebar">
-			<nav className="sidebar-nav">
-				<Link
-					to="/dashboard"
-					className={`nav-item ${
-						location.pathname === "/dashboard" ? "active" : ""
-					}`}
-				>
-					Trang chủ
-				</Link>
-				<Link
-					to="/boarding-houses"
-					className={`nav-item ${
-						location.pathname === "/boarding-houses" ? "active" : ""
-					}`}
-				>
-					QL Nhà trọ
-				</Link>
-				<Link
-					to="/rooms"
-					className={`nav-item ${
-						location.pathname === "/rooms" ? "active" : ""
-					}`}
-				>
-					QL Phòng trọ
-				</Link>
-				<Link
-					to="/tenants"
-					className={`nav-item ${
-						location.pathname === "/tenants" ? "active" : ""
-					}`}
-				>
-					QL người thuê
-				</Link>
-				<Link
-					to="/contracts"
-					className={`nav-item ${
-						location.pathname === "/contracts" ? "active" : ""
-					}`}
-				>
-					QL Hợp đồng
-				</Link>
-				<Link
-					to="/bills"
-					className={`nav-item ${
-						location.pathname === "/bills" ? "active" : ""
-					}`}
-				>
-					Quản lý hoá đơn
-				</Link>
-				<Link
-					to="/reports"
-					className={`nav-item ${
-						location.pathname === "/reports" ? "active" : ""
-					}`}
-				>
-					Báo cáo
-				</Link>
-			</nav>
-		</div>
-	);
+  return (
+    <div className="sidebar">
+      <nav className="sidebar-nav">
+        <Link
+          to="/dashboard"
+          className={`nav-item ${
+            location.pathname === "/dashboard" ? "active" : ""
+          }`}
+        >
+          Trang chủ
+        </Link>
+        <Link
+          to="/boarding-houses"
+          className={`nav-item ${
+            location.pathname === "/boarding-houses" ? "active" : ""
+          }`}
+        >
+          QL Nhà trọ
+        </Link>
+        <Link
+          to="/rooms"
+          className={`nav-item ${
+            location.pathname === "/rooms" ? "active" : ""
+          }`}
+        >
+          QL Phòng trọ
+        </Link>
+        <Link
+          to="/tenants"
+          className={`nav-item ${
+            location.pathname === "/tenants" ? "active" : ""
+          }`}
+        >
+          QL người thuê
+        </Link>
+        <Link
+          to="/contracts"
+          className={`nav-item ${
+            location.pathname === "/contracts" ? "active" : ""
+          }`}
+        >
+          QL Hợp đồng
+        </Link>
+        <Link
+          to="/bills"
+          className={`nav-item ${
+            location.pathname === "/bills" ? "active" : ""
+          }`}
+        >
+          Quản lý hoá đơn
+        </Link>
+        <Link
+          to="/reports"
+          className={`nav-item ${
+            location.pathname === "/reports" ? "active" : ""
+          }`}
+        >
+          Báo cáo
+        </Link>
+        <Link
+          to="/chat"
+          className={`nav-item ${
+            location.pathname === "/chat" ? "active" : ""
+          }`}
+        >
+          Chat
+        </Link>
+      </nav>
+    </div>
+  );
 };
 
 export default Sidebar;

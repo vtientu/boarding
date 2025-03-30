@@ -9,7 +9,6 @@ module.exports = (allowedRoles) => {
 			if (!user || !user.role_id) {
 				return res.status(403).json({ message: "User role not found" });
 			}
-
 			if (!allowedRoles.includes(user.role_id.role_name)) {
 				return res.status(403).json({ message: "Access denied" });
 			}

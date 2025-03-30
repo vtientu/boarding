@@ -19,7 +19,7 @@ router.get("/check/:transactionCode", authMiddleware, checkPaymentStatus);
 router.put("/:id/status", authMiddleware, updatePaymentStatus);
 
 // Routes công khai cho callback từ VNPay
-router.get("/vnpay-return", vnpayReturn);
-router.get("/vnpay-ipn", vnpayIpn);
+router.get("/vnpay/return", vnpayReturn);
+router.get("/vnpay/ipn", vnpayIpn);
 
 module.exports = router;

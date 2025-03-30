@@ -121,7 +121,7 @@ const seedDatabase = async () => {
 		// Tạo Bill
 		const bill = await Bill.create({
 			room_id: rooms[0]._id,
-			user_id: tenant._id,
+			tenant_id: tenant._id,
 			room_price: 3000000,
 			electricity: 500000,
 			water: 200000,
@@ -133,6 +133,7 @@ const seedDatabase = async () => {
 				water_index_start: 50,
 				water_index_end: 70,
 			},
+			status: "Pending",
 		});
 
 		// Tạo Payment

@@ -14,7 +14,7 @@ class SocketClient {
 
         // Xử lý các sự kiện cơ bản
         this.socket.on("connect", () => {
-            console.log("Connected to socket server");
+            console.log("Connected to socket server with socket id:", this.socket.id);
         });
 
         this.socket.on("connect_error", (error) => {
@@ -48,7 +48,17 @@ class SocketClient {
                 this.listeners.get("messages_read")(data);
             }
         });
+
+        // Lắng nghe danh sách người dùng online
+        this.socket.on("online_users", (data) => {
+            if (this.listeners.has("online_users")) {
+                this.listeners.get("online_users")(data);
+            }
+        });
     }
+
+    // Lắng nghe danh sách người dùng online
+
 
     // Tham gia phòng chat
     joinRoom(receiverId) {
@@ -58,7 +68,8 @@ class SocketClient {
     }
 
     // Gửi tin nhắn
-    sendMessage(data) {
+    async sendMessage(data) {
+        await this.joinRoom(data.receiver_id);
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject(new Error("Socket not connected"));
@@ -88,6 +99,22 @@ class SocketClient {
                     resolve(response.data);
                 } else {
                     reject(new Error(response.message));
+                }
+            });
+        });
+    }
+
+    // Lấy danh sách người dùng online
+    getOnlineUsers() {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject(new Error("Socket not connected"));
+                return;
+            }
+
+            this.socket.emit("get_online_users", (response) => {
+                if (response.status === "success") {
+                    resolve(response.data);
                 }
             });
         });

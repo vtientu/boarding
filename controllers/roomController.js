@@ -3,6 +3,7 @@ const BoardingHouse = require("../models/BoardingHouse");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const Contract = require("../models/Contract");
+const { isValidObjectId } = require("mongoose");
 
 // Lấy tất cả phòng
 const getAllRooms = async (req, res) => {
@@ -154,7 +155,7 @@ const createRoom = async (req, res) => {
 			landlord_id: userId,
 			boarding_house_id,
 		});
-console.log('point 1');
+		console.log('point 1');
 
 		await newRoom.save();
 		console.log("point 2");
@@ -388,9 +389,14 @@ const searchRooms = async (req, res) => {
 };
 
 // Lấy tất cả phòng của owner đang đăng nhập
-const getOwnerRooms = async (req, res) => {
+const getRoomsCombo = async (req, res) => {
 	try {
 		const userId = req.user.id;
+		if (!userId || !isValidObjectId(userId)) {
+			return res.status(401).json({
+				msg: "Unauthorized. Please add valid token",
+			});
+		}
 
 		// Kiểm tra quyền - chỉ owner mới có thể xem danh sách phòng của mình
 		const user = await User.findById(userId).populate("role_id");
@@ -412,55 +418,55 @@ const getOwnerRooms = async (req, res) => {
 		} = req.query;
 
 		// Query cơ bản: tìm tất cả phòng của owner này
-		const query = { landlord_id: userId };
+		const query = {};
 
 		// Filter theo status
 		if (status) {
 			query.status = status;
 		}
 
-		// Filter theo room_type
-		if (room_type) {
-			query.room_type = room_type;
-		}
+		// // Filter theo room_type
+		// if (room_type) {
+		// 	query.room_type = room_type;
+		// }
 
-		// Filter theo giá
-		if (min_price || max_price) {
-			query.month_rent = {};
+		// // Filter theo giá
+		// if (min_price || max_price) {
+		// 	query.month_rent = {};
 
-			if (min_price) {
-				query.month_rent.$gte = parseInt(min_price);
-			}
+		// 	if (min_price) {
+		// 		query.month_rent.$gte = parseInt(min_price);
+		// 	}
 
-			if (max_price) {
-				query.month_rent.$lte = parseInt(max_price);
-			}
-		}
+		// 	if (max_price) {
+		// 		query.month_rent.$lte = parseInt(max_price);
+		// 	}
+		// }
 
-		// Filter theo boarding_house_id cụ thể
-		if (boarding_house_id) {
-			query.boarding_house_id = boarding_house_id;
-		}
+		// // Filter theo boarding_house_id cụ thể
+		// if (boarding_house_id) {
+		// 	query.boarding_house_id = boarding_house_id;
+		// }
 
-		// Sorting
-		let sortOption = { createdAt: -1 };
-		if (sort) {
-			const sortFields = sort.split(",");
-			sortOption = {};
-			sortFields.forEach((field) => {
-				const sortOrder = field.startsWith("-") ? -1 : 1;
-				const fieldName = field.startsWith("-") ? field.substring(1) : field;
-				sortOption[fieldName] = sortOrder;
-			});
-		}
+		// // Sorting
+		// let sortOption = { createdAt: -1 };
+		// if (sort) {
+		// 	const sortFields = sort.split(",");
+		// 	sortOption = {};
+		// 	sortFields.forEach((field) => {
+		// 		const sortOrder = field.startsWith("-") ? -1 : 1;
+		// 		const fieldName = field.startsWith("-") ? field.substring(1) : field;
+		// 		sortOption[fieldName] = sortOrder;
+		// 	});
+		// }
 
-		// Thực hiện query với pagination
-		const skip = (page - 1) * limit;
+		// // Thực hiện query với pagination
+		// const skip = (page - 1) * limit;
 		const rooms = await Room.find(query)
 			.populate("boarding_house_id", "location status")
-			.sort(sortOption)
-			.skip(skip)
-			.limit(parseInt(limit));
+		// .sort(sortOption)
+		// .skip(skip)
+		// .limit(parseInt(limit));
 
 		// Lấy thông tin hợp đồng cho mỗi phòng
 		const roomsWithContracts = await Promise.all(
@@ -501,13 +507,14 @@ const getOwnerRooms = async (req, res) => {
 
 		res.status(200).json({
 			data: roomsWithContracts,
-			pagination: {
-				total,
-				page: parseInt(page),
-				limit: parseInt(limit),
-				pages: Math.ceil(total / parseInt(limit)),
-			},
-			stats,
+			totalData: total,
+			// pagination: {
+			// 	total,
+			// 	page: parseInt(page),
+			// 	limit: parseInt(limit),
+			// 	pages: Math.ceil(total / parseInt(limit)),
+			// },
+			// stats,
 		});
 	} catch (error) {
 		console.error("Error getting owner rooms:", error);
@@ -618,6 +625,6 @@ module.exports = {
 	updateRoom,
 	deleteRoom,
 	searchRooms,
-	getOwnerRooms,
+	getRoomsCombo,
 	getRoomsByBoardingHouse,
 };

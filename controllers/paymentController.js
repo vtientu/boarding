@@ -140,10 +140,9 @@ const createPaymentRequest = async (req, res) => {
 				message: "Không tìm thấy hóa đơn",
 			});
 		}
-
 		// Kiểm tra quyền (chỉ người thuê tương ứng mới được thanh toán)
 		if (
-			bill.user_id.toString() !== req.user.id &&
+			bill.tenant_id.toString() !== req.user.id &&
 			req.user.role !== "Admin" &&
 			req.user.role !== "Owner"
 		) {
@@ -210,6 +209,9 @@ const createPaymentRequest = async (req, res) => {
 
 			await payment.save();
 
+			bill.status = "Pending";
+			await bill.save();
+
 			res.status(201).json({
 				success: true,
 				message: "Đã tạo yêu cầu thanh toán",
@@ -238,12 +240,12 @@ const vnpayReturn = async (req, res) => {
 		if (result.code === "00") {
 			// Thành công - chuyển hướng đến trang thành công
 			return res.redirect(
-				`${process.env.FRONTEND_URL}/payment/success?paymentId=${result.paymentId}`,
+				`${process.env.FRONTEND_URL}/payment?type=success&paymentId=${result.paymentId}`,
 			);
 		} else {
 			// Thất bại - chuyển hướng đến trang thất bại
 			return res.redirect(
-				`${process.env.FRONTEND_URL}/payment/failed?code=${result.code}&message=${result.message}`,
+				`${process.env.FRONTEND_URL}/payment?type=failed&code=${result.code}&message=${result.message}`,
 			);
 		}
 	} catch (error) {

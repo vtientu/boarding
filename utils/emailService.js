@@ -88,7 +88,7 @@ const sendEmail = async (options) => {
  * @param {String} resetUrl - URL khôi phục mật khẩu
  * @returns {Promise} - Promise chứa kết quả gửi email
  */
-const sendPasswordResetEmail = async (to, name, resetUrl) => {
+const sendPasswordResetEmail = async (to, name, resetCode) => {
 	const subject = "Đặt lại mật khẩu của bạn";
 
 	// Nội dung text
@@ -97,9 +97,9 @@ const sendPasswordResetEmail = async (to, name, resetUrl) => {
     
     Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào liên kết dưới đây để đặt lại mật khẩu:  
     
-    ${resetUrl}  
+    ${resetCode}  
     
-    Liên kết này sẽ hết hạn sau 10 phút.  
+    Code này sẽ hết hạn sau 10 phút.  
     
     Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.  
     
@@ -114,12 +114,8 @@ const sendPasswordResetEmail = async (to, name, resetUrl) => {
       <p>Xin chào <strong>${name}</strong>,</p>  
       <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào nút dưới đây để đặt lại mật khẩu:</p>  
       <div style="text-align: center; margin: 30px 0;">  
-        <a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Đặt lại mật khẩu</a>  
+        <p style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">${resetCode}</p>  
       </div>  
-      <p>Hoặc sao chép và dán liên kết này vào trình duyệt của bạn:</p>  
-      <p style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; word-break: break-all;">  
-        ${resetUrl}  
-      </p>  
       <p>Liên kết này sẽ hết hạn sau <strong>10 phút</strong>.</p>  
       <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>  
       <p>Trân trọng,<br>Đội ngũ Boarding House System</p>  
@@ -183,9 +179,81 @@ const sendWelcomeEmail = async (to, name, role) => {
 	});
 };
 
+/**
+ * Gửi email thông báo đóng tiền hóa đơn
+ * @param {String} to - Email người nhận
+ * @param {String} name - Tên người nhận
+ * @param {String} subject - Tiêu đề email
+ * @param {String} message - Nội dung email
+ * @returns {Promise} - Promise chứa kết quả gửi email
+ */
+const sendNotificationEmail = async (to, message, tenant) => {
+	const total_amount = tenant.room_id?.room_price + tenant.room_id?.electricity + tenant.room_id?.water + tenant.room_id?.additional_services;
+	const payment_deadline = tenant.room_id?.payment_deadline;
+	const payment_link = process.env.FRONTEND_URL + "/payments";
+
+	const html = `<div style="max-width: 600px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+        <h2 style="color: #2c3e50; text-align: center;">🏠 Thông Báo Đóng Tiền Trọ</h2>
+        <p>Xin chào <b>${tenant.name}</b>,</p>
+        <p>${message}</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Phòng:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${tenant.room_id?.room_number}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Giá Phòng:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${tenant.room_id?.room_price} VND</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Điện:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${tenant.room_id?.electricity} VND</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Nước:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${tenant.room_id.water} VND</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Dịch vụ khác:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${tenant.room_id.additional_services} VND</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Tổng cộng:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: red;">${total_amount} VND</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><b>Hạn thanh toán:</b></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${payment_deadline}</td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 20px;">Vui lòng thanh toán trước hạn để tránh phát sinh phí trễ hạn. Nếu đã thanh toán, vui lòng bỏ qua email này.</p>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="${payment_link}" style="display: inline-block; padding: 10px 20px; background: #27ae60; color: white; text-decoration: none; border-radius: 5px;">Thanh Toán Ngay</a>
+        </p>
+
+        <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">Mọi thắc mắc vui lòng liên hệ chủ trọ. Cảm ơn bạn đã sử dụng dịch vụ!</p>
+    </div>`
+
+	const subject = "Thông báo đóng tiền hóa đơn";
+	const text = `Xin chào ${tenant.name},
+	${message}
+	`;
+
+	return sendEmail({
+		to,
+		subject,
+		text,
+		html,
+	});
+};
+
 module.exports = {
 	initTransporter,
 	sendEmail,
 	sendPasswordResetEmail,
 	sendWelcomeEmail,
+	sendNotificationEmail,
 };

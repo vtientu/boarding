@@ -10,34 +10,32 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal";
 
-const Login = () => {
+const ChangeForgotPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [token, setToken] = useState(
     JSON.parse(localStorage.getItem("auth")) || ""
   );
   const navigate = useNavigate();
-  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] =
-    useState(false);
 
-  const handleLoginSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    let email = e.target.email.value;
+    let code = e.target.code.value;
     let password = e.target.password.value;
 
-    if (email.length > 0 && password.length > 0) {
+    if (code.length > 0 && password.length > 0) {
       const formData = {
-        email,
+        code,
         password,
       };
       try {
         const response = await axios.post(
-          "http://localhost:3000/users/login",
+          "http://localhost:3000/users/reset-password",
           formData
         );
 
         localStorage.setItem("auth", JSON.stringify(response.data.token));
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        toast.success("Login successfull");
+        toast.success("Reset password successfull");
         if (response.data.user.role_id.role_name === "Tenant") {
           navigate("/user-dashboard");
         } else {
@@ -70,14 +68,14 @@ const Login = () => {
             <img src={Logo} alt="" />
           </div>
           <div className="login-center">
-            <h2>Welcome back!</h2>
+            <h2>Forgot Password!</h2>
             <p>Please enter your details</p>
-            <form onSubmit={handleLoginSubmit}>
-              <input type="email" placeholder="Email" name="email" />
+            <form onSubmit={handleSubmit}>
+              <input type="text" placeholder="Code" name="code" />
               <div className="pass-input-div">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="New Password"
                   name="password"
                 />
                 {showPassword ? (
@@ -94,49 +92,18 @@ const Login = () => {
                   />
                 )}
               </div>
-
-              <div className="login-center-options">
-                <div className="remember-div">
-                  <input type="checkbox" id="remember-checkbox" />
-                  <label htmlFor="remember-checkbox">
-                    Remember for 30 days
-                  </label>
-                </div>
-                <p
-                  style={{
-                    cursor: "pointer",
-                    color: "blue",
-                    textDecoration: "underline",
-                    fontWeight: "bold",
-                    fontSize: "12px",
-                    marginBottom: 0,
-                  }}
-                  onClick={() => setIsForgotPasswordModalOpen(true)}
-                >
-                  Forgot password?
-                </p>
-              </div>
               <div className="login-center-buttons">
-                <button type="submit">Log In</button>
-                <button type="submit">
-                  <img src={GoogleSvg} alt="" />
-                  Log In with Google
-                </button>
+                <button type="submit">Change Password</button>
               </div>
             </form>
           </div>
-
           <p className="login-bottom-p">
-            Don't have an account? <Link to="/register">Sign Up</Link>
+            <Link to="/login">Login</Link>
           </p>
         </div>
       </div>
-      <ForgotPasswordModal
-        isOpen={isForgotPasswordModalOpen}
-        onClose={() => setIsForgotPasswordModalOpen(false)}
-      />
     </div>
   );
 };
 
-export default Login;
+export default ChangeForgotPassword;

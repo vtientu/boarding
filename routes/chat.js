@@ -8,6 +8,19 @@ const mongoose = require("mongoose");
 // Middleware xác thực cho tất cả các routes
 router.use(authMiddleware);
 
+// Lấy tất cả người dùng khác
+router.get("/users", async (req, res) => {
+	try {
+		const users = await User.find({
+			_id: { $ne: req.user.id },
+		});
+		res.status(200).json({ data: users });
+	} catch (error) {
+		console.error("Get users error:", error);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+});
+
 // Lấy tất cả cuộc trò chuyện của người dùng hiện tại
 router.get("/conversations", async (req, res) => {
 	try {

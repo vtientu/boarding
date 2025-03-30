@@ -7,7 +7,7 @@ const {
 	updateRoom,
 	deleteRoom,
 	searchRooms,
-	getOwnerRooms,
+	getRoomsCombo,
 	getRoomsByBoardingHouse,
 } = require("../controllers/roomController");
 const authMiddleware = require("../middleware/auth");
@@ -17,7 +17,7 @@ router.get("/", getAllRooms); // done
 router.get("/search", searchRooms); // done
 
 // Lấy tất cả phòng của owner đăng nhập
-router.get("/owner", authMiddleware, getOwnerRooms); // done
+router.get("/combo", authMiddleware, getRoomsCombo); // done
 
 // Lấy chi tiết phòng (public)
 router.get("/detail/:id", getRoomDetail); //done

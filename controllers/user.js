@@ -19,7 +19,7 @@ const login = async (req, res) => {
 		});
 	}
 
-	let foundUser = await User.findOne({ email: req.body.email });
+	let foundUser = await User.findOne({ email: req.body.email }).populate("role_id", '_id role_name');
 	if (foundUser) {
 		const isMatch = await foundUser.comparePassword(password);
 		if (isMatch) {
@@ -31,10 +31,8 @@ const login = async (req, res) => {
 				}
 			);
 
-			// Chuyển đối tượng Mongoose thành plain JavaScript object
-			const userObj = foundUser.toObject();
 			// Loại bỏ password
-			const { password: _, ...userWithoutPassword } = userObj;
+			const { password: _, ...userWithoutPassword } = foundUser.toObject();
 
 			return res
 				.status(200)
@@ -275,19 +273,15 @@ const forgotPassword = async (req, res) => {
 		const user = await User.findOne({ email });
 		if (!user) {
 			// Trả về 200 thay vì 404 vì lý do bảo mật (không tiết lộ email tồn tại hay không)
-			return res.status(200).json({
-				msg: "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu",
+			return res.status(400).json({
+				msg: "Email chưa được đăng ký",
 			});
 		}
 
-		// Tạo token reset password
-		const resetToken = crypto.randomBytes(32).toString("hex");
-
+		// Tạo code reset password
+		const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 		// Lưu token đã hash vào DB (không lưu token gốc vì lý do bảo mật)
-		user.resetPasswordToken = crypto
-			.createHash("sha256")
-			.update(resetToken)
-			.digest("hex");
+		user.resetPasswordCode = resetCode;
 
 		// Token hết hạn sau 10 phút
 		user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
@@ -295,9 +289,6 @@ const forgotPassword = async (req, res) => {
 		await user.save({ validateBeforeSave: false });
 
 		// Tạo URL reset
-		const resetURL = `${req.protocol}://${req.get(
-			"host"
-		)}/api/auth/reset-password/${resetToken}`;
 
 		// 	// Nội dung email
 		// 	const message = `  
@@ -308,7 +299,7 @@ const forgotPassword = async (req, res) => {
 		// `;
 
 		// // Sử dụng service để gửi email
-		await sendPasswordResetEmail(user.email, user.name, resetURL);
+		await sendPasswordResetEmail(user.email, user.name, resetCode);
 
 		res.status(200).json({
 			msg: "Email đặt lại mật khẩu đã được gửi",
@@ -326,30 +317,23 @@ const forgotPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
 	try {
 		// Lấy token từ params và mật khẩu mới từ body
-		const resetToken = req.params.token; // Đổi tên biến từ token thành resetToken
-		const { password } = req.body;
+		const { code, password } = req.body;
 
-		if (!resetToken || !password) {
+		if (!code || !password) {
 			return res.status(400).json({
-				msg: "Vui lòng cung cấp token và mật khẩu mới",
+				msg: "Vui lòng cung cấp mã xác thực và mật khẩu mới",
 			});
 		}
 
-		// Hash token để tìm trong DB
-		const hashedToken = crypto
-			.createHash("sha256")
-			.update(token)
-			.digest("hex");
-
 		// Tìm người dùng có token còn hạn
 		const user = await User.findOne({
-			resetPasswordToken: hashedToken,
+			resetPasswordCode: code,
 			resetPasswordExpires: { $gt: Date.now() },
-		});
+		}).populate("role_id", '_id role_name');
 
 		if (!user) {
 			return res.status(400).json({
-				msg: "Token không hợp lệ hoặc đã hết hạn",
+				msg: "Mã xác thực không hợp lệ hoặc đã hết hạn",
 			});
 		}
 
@@ -362,7 +346,7 @@ const resetPassword = async (req, res) => {
 
 		// Cập nhật mật khẩu mới
 		user.password = password;
-		user.resetPasswordToken = undefined;
+		user.resetPasswordCode = undefined;
 		user.resetPasswordExpires = undefined;
 
 		await user.save(); // Middleware pre-save sẽ hash mật khẩu
@@ -508,6 +492,21 @@ const getUserList = async (req, res) => {
 	}
 };
 
+const getTenantCombo = async (req, res) => {
+	try {
+		const tenantRole = await Role.findOne({ role_name: "Tenant" });
+		if (!tenantRole) {
+			return res.status(404).json({ msg: "Không tìm thấy role Tenant" });
+		}
+
+		const users = await User.find({ role_id: tenantRole._id }).select("-password");
+		res.status(200).json({ users });
+	} catch (error) {
+		console.error("Error in getUserCombo:", error);
+		res.status(500).json({ msg: "Lỗi server khi lấy danh sách người dùng", error: error.message });
+	}
+};
+
 const getUserById = async (req, res) => {
 	const { userId } = req.params;
 
@@ -522,15 +521,54 @@ const getUserById = async (req, res) => {
 	}
 
 
-	const userRole = await Role.findById(user.role_id);
-	if (!userRole || userRole.role_name !== "Owner") {
-		return res.status(403).json({
-			msg: "Permission denied. Only owners can access this resource",
-		});
-	}
+	// const userRole = await Role.findById(user.role_id);
+	// if (!userRole || userRole.role_name !== "Owner") {
+	// 	return res.status(403).json({
+	// 		msg: "Permission denied. Only owners can access this resource",
+	// 	});
+	// }
 
 	res.status(200).json({ message: "User fetched successfully", user });
 };
+
+const activeUser = async (req, res) => {
+	const { userId } = req.params;
+
+	if (!isValidObjectId(userId)) {
+		return res.status(400).json({ message: "Invalid user ID" });
+	}
+
+	const user = await User.findById(userId);
+
+	if (!user) {
+		return res.status(404).json({ message: "User not found" });
+	}
+
+	user.status = "active";
+	await user.save();
+
+	res.status(200).json({ message: "User status updated successfully" });
+};
+
+const inactiveUser = async (req, res) => {
+	const { userId } = req.params;
+
+	if (!isValidObjectId(userId)) {
+		return res.status(400).json({ message: "Invalid user ID" });
+	}
+
+	const user = await User.findById(userId);
+
+	if (!user) {
+		return res.status(404).json({ message: "User not found" });
+	}
+
+	user.status = "inactive";
+	await user.save();
+
+	res.status(200).json({ message: "User status updated successfully" });
+};
+
 
 module.exports = {
 	login,
@@ -540,5 +578,8 @@ module.exports = {
 	forgotPassword,
 	resetPassword,
 	getUserById,
-	getUserList
+	getUserList,
+	activeUser,
+	inactiveUser,
+	getTenantCombo
 };

@@ -69,6 +69,9 @@ class PaymentService {
 				transaction_code: transactionCode,
 			});
 
+			bill.status = "Pending";
+			await bill.save();
+
 			await payment.save();
 
 			// Thông tin VNPay
@@ -76,7 +79,7 @@ class PaymentService {
 				vnp_TxnRef: transactionCode,
 				vnp_OrderInfo: `Thanh toan hoa don tien phong ${bill.room_id}`,
 				vnp_OrderType: "billpayment",
-				vnp_Amount: totalAmount * 100, // Nhân 100 vì VNPay yêu cầu số tiền * 100
+				vnp_Amount: totalAmount, // Nhân 100 vì VNPay yêu cầu số tiền * 100
 				vnp_IpAddr: ipAddress,
 				vnp_ReturnUrl: this.vnp_ReturnUrl,
 				vnp_Locale: "vn",
@@ -104,38 +107,22 @@ class PaymentService {
 	 */
 	async processVnpayReturn(vnpParams) {
 		try {
-			// Lấy chữ ký từ VNPay
-			const vnp_SecureHash = vnpParams.vnp_SecureHash;
+			const verify = this.vnpay.verifyReturnUrl(vnpParams);
+			console.log(verify);
 
-			// Xóa tham số bảo mật trước khi tạo chữ ký
-			delete vnpParams.vnp_SecureHash;
-			delete vnpParams.vnp_SecureHashType;
-
-			// Sắp xếp các tham số
-			const sortedParams = this.sortObject(vnpParams);
-
-			// Tạo chuỗi ký tự cần xác minh
-			const signData = qs.stringify(sortedParams, { encode: false });
-
-			// Tạo chữ ký để so sánh
-			const hmac = crypto.createHmac("sha512", this.vnp_HashSecret);
-			const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
-			// So sánh chữ ký để xác thực
-			if (vnp_SecureHash !== signed) {
+			if (!verify.isVerified) {
 				return {
-					code: "97",
-					message: "Invalid signature",
+					code: verify.code,
+					message: 'Xác thực tính toàn vẹn dữ liệu thất bại',
 				};
 			}
-
-			// Lấy thông tin kết quả giao dịch
-			const transactionCode = vnpParams.vnp_TxnRef;
-			const responseCode = vnpParams.vnp_ResponseCode;
+			if (!verify.isSuccess) {
+				return res.send('Đơn hàng thanh toán thất bại');
+			}
 
 			// Tìm giao dịch trong database
 			const payment = await Payment.findOne({
-				transaction_code: transactionCode,
+				transaction_code: vnpParams.vnp_TxnRef,
 			});
 
 			if (!payment) {
@@ -155,26 +142,19 @@ class PaymentService {
 			}
 
 			// Cập nhật trạng thái thanh toán
-			if (responseCode === "00") {
-				payment.payment_status = "Completed";
-				payment.payment_date = new Date();
-				await payment.save();
+			payment.payment_status = "Completed";
+			payment.payment_date = new Date();
+			await payment.save();
 
-				return {
-					code: "00",
-					message: "Transaction successful",
-					paymentId: payment._id,
-				};
-			} else {
-				payment.payment_status = "Failed";
-				await payment.save();
+			const bill = await Bill.findById(payment.bill_id);
+			bill.status = "Paid";
+			await bill.save();
 
-				return {
-					code: responseCode,
-					message: "Transaction failed",
-					paymentId: payment._id,
-				};
-			}
+			return {
+				code: "00",
+				message: "Transaction successful",
+				paymentId: payment._id,
+			};
 		} catch (error) {
 			console.error("Process VNPay return error:", error);
 			return {

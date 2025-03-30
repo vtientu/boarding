@@ -2,9 +2,8 @@ const jwt = require('jsonwebtoken');
 
 const authenticationMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization
-
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({msg: "Unauthorized. Please add valid token"});
+    return res.status(401).json({ msg: "Unauthorized. Please add valid token" });
   }
 
   const token = authHeader.split(' ')[1]
@@ -15,7 +14,7 @@ const authenticationMiddleware = async (req, res, next) => {
     req.user = { id, name }
     next()
   } catch (error) {
-    return res.status(401).json({msg: "Unauthorized. Please add valid token"});
+    return res.status(401).json({ msg: "Unauthorized. Please add valid token" });
   }
 }
 

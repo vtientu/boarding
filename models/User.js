@@ -48,11 +48,16 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 			enum: ["Male", "Female", "Other"],
 		},
-		resetPasswordToken: {
+		resetPasswordCode: {
 			type: String,
 		},
 		resetPasswordExpires: {
 			type: Date,
+		},
+		status: {
+			type: String,
+			enum: ["active", "inactive"],
+			default: "active",
 		},
 	},
 	{ timestamps: true }

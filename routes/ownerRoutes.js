@@ -17,6 +17,7 @@ router.delete("/tenants/:id", ownerController.manageTenants); // done
 
 // Bill Management
 router.get("/bills", ownerController.getBills); // OKE
+router.post("/bills/send-notification", ownerController.sendNotification); // OKE
 router.post("/bills/create", ownerController.createBill); // OKE
 router.put("/bills/:id", ownerController.updateBill); // OKE
 

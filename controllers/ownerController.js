@@ -6,6 +6,7 @@ const Payment = require("../models/Payment");
 const Contract = require("../models/Contract");
 const { isValidObjectId } = require("mongoose");
 const Role = require("../models/Role");
+const { sendNotificationEmail } = require("../utils/emailService");
 
 exports.manageRooms = async (req, res) => {
 	try {
@@ -87,7 +88,7 @@ exports.createBill = async (req, res) => {
 	try {
 		const {
 			room_id,
-			user_id,
+			tenant_id,
 			room_price,
 			electricity,
 			water,
@@ -97,9 +98,9 @@ exports.createBill = async (req, res) => {
 			image,
 		} = req.body;
 
-		const bill = new Bill({
+		const bill = await Bill.create({
 			room_id,
-			user_id,
+			tenant_id,
 			room_price,
 			electricity,
 			water,
@@ -107,9 +108,7 @@ exports.createBill = async (req, res) => {
 			payment_deadline: new Date(payment_deadline),
 			details,
 			image,
-		});
-
-		await bill.save();
+		})
 
 		res.status(201).json({ message: "Bill created successfully", bill });
 	} catch (error) {
@@ -153,12 +152,43 @@ exports.updateBill = async (req, res) => {
 	}
 };
 
+exports.sendNotification = async (req, res) => {
+	try {
+		const { bill_ids, notification_content } = req.body;
+		if (!bill_ids || bill_ids.length === 0) {
+			const isValid = bill_ids.every(id => isValidObjectId(id));
+			if (!isValid) {
+				return res.status(400).json({ message: "Invalid tenant IDs" });
+			}
+			return res.status(400).json({ message: "Tenant IDs are required" });
+		}
+
+		const bills = await Bill.find({
+			_id: { $in: bill_ids },
+		}).populate("tenant_id", "_id name email").populate("room_id", '_id room_number room_type');
+
+		bills.forEach(async (bill) => {
+			if (bill.tenant_id?.email) {
+				await sendNotificationEmail(bill.tenant_id.email, notification_content, bill);
+			}
+		});
+
+		res.status(200).json({ message: "Notification sent successfully", bills });
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
 exports.getBills = async (req, res) => {
 	try {
-		const { page = 1, limit = 10 } = req.query;
+		// const { page = 1, limit = 10 } = req.query;
 
-		const skip = (page - 1) * limit;
-		const bills = await Bill.find();
+		// const skip = (page - 1) * limit;
+		const bills = await Bill.find()
+			.populate("room_id", "_id room_number room_type")
+			.populate("tenant_id", "_id name phone address")
+			.select("-__v");
+
 
 		const totalBills = await Bill.countDocuments({
 			room_id: {
@@ -168,12 +198,7 @@ exports.getBills = async (req, res) => {
 
 		return res.status(200).json({
 			data: bills,
-			pagination: {
-				total: totalBills,
-				page: parseInt(page),
-				limit: parseInt(limit),
-				pages: Math.ceil(totalBills / limit),
-			},
+			totalData: totalBills,
 		});
 	} catch (error) {
 		res.status(500).json({ message: "Server error", error: error.message });
