@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./AddUserModal.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
   const [error, setError] = useState("");
@@ -25,6 +26,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
       errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
     return errors;
   };
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,14 +102,40 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 
           <div className="form-group">
             <label htmlFor="password">Mật khẩu *</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+            <div
+              className="password-input"
+              style={{
+                alignItems: "center",
+              }}
+            >
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <FaEyeSlash
+                    style={{
+                      fontSize: 20,
+                    }}
+                  />
+                ) : (
+                  <FaEye
+                    style={{
+                      fontSize: 20,
+                    }}
+                  />
+                )}
+              </button>
+            </div>
             {error.password && (
               <p className="error-message">{error.password}</p>
             )}
