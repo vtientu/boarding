@@ -37,7 +37,7 @@ exports.manageTenants = async (req, res) => {
 				return await removeTenantFromRoom(req, res);
 			default:
 				const tenants = await User.find({
-					role_id: await Role.findOne({ role_name: "Tenant" })._id,
+					role_id: await Role.findOne({ role_name: "Tenant", status: "active" })._id,
 				}).select("-password");
 				return res.json(tenants);
 		}

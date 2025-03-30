@@ -22,6 +22,11 @@ const login = async (req, res) => {
 	let foundUser = await User.findOne({ email: req.body.email }).populate("role_id", '_id role_name');
 	if (foundUser) {
 		const isMatch = await foundUser.comparePassword(password);
+		const isActive = foundUser.status === "active";
+		if (!isActive) {
+			return res.status(401).json({ message: "Account is not active" });
+		}
+
 		if (isMatch) {
 			const token = jwt.sign(
 				{ id: foundUser._id, name: foundUser.name },
@@ -271,6 +276,11 @@ const forgotPassword = async (req, res) => {
 
 		// Tìm người dùng theo email
 		const user = await User.findOne({ email });
+
+		if (user.status === "inactive") {
+			return res.status(401).json({ message: "Account is not active" });
+		}
+
 		if (!user) {
 			// Trả về 200 thay vì 404 vì lý do bảo mật (không tiết lộ email tồn tại hay không)
 			return res.status(400).json({
@@ -384,7 +394,7 @@ const getUserList = async (req, res) => {
 			limit = 10,
 			role,
 			search,
-			status,
+			status = "active",
 			gender,
 			age,
 			phone,
@@ -494,7 +504,7 @@ const getUserList = async (req, res) => {
 
 const getTenantCombo = async (req, res) => {
 	try {
-		const tenantRole = await Role.findOne({ role_name: "Tenant" });
+		const tenantRole = await Role.findOne({ role_name: "Tenant", status: "active" });
 		if (!tenantRole) {
 			return res.status(404).json({ msg: "Không tìm thấy role Tenant" });
 		}

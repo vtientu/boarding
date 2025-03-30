@@ -190,12 +190,11 @@ const UserManagement = () => {
                         <td>
                           <div className="action-buttons">
                             <button className="edit-btn">Sửa</button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => handleDeleteUser(user._id)}
-                            >
-                              Xóa
-                            </button>
+
+                            <label className="switch">
+                              <input type="checkbox" />
+                              <span className="slider round"></span>
+                            </label>
                           </div>
                         </td>
                       </tr>
