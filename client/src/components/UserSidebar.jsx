@@ -11,7 +11,7 @@ const UserSidebar = () => {
     { path: "/user-dashboard", label: "Trang chủ" },
     { path: "/profile", label: "QL thông tin cá nhân" },
     { path: "/payment", label: "QL hoá đơn" },
-    { path: "/chat", label: "Chat" },
+    { path: "/chat", label: "Nhắn tin" },
   ];
 
   return (

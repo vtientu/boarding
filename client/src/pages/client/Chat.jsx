@@ -37,7 +37,7 @@ const Chat = () => {
         <main className="main-content">
           <div className="bill-management">
             <div className="bill-header">
-              <h2>Chat</h2>
+              <h2>Nhắn tin</h2>
               <button
                 className="add-boarding-house-btn"
                 onClick={() => setIsNewChatModalOpen(true)}
