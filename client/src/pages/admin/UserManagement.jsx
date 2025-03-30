@@ -135,11 +135,16 @@ const UserManagement = () => {
           return;
         }
 
-        await axios.delete(`http://localhost:3000/owners/tenants/${userId}`, {
+        await axios.delete(`http://localhost:3000/owners/users/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        // Hiển thị thông báo thành công
+        alert("Xóa người dùng thành công!");
+        
+        // Cập nhật lại danh sách người dùng
         fetchUsers();
       } catch (err) {
         setError(err.response?.data?.msg || "Có lỗi xảy ra khi xóa người dùng");

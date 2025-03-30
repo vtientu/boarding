@@ -34,6 +34,7 @@ class PaymentService {
 			 */
 			enableLog: true, // tùy chọn
 		});
+
 	}
 	/**
 	 * Tạo một giao dịch thanh toán VNPay
@@ -258,3 +259,4 @@ class PaymentService {
 }
 
 module.exports = new PaymentService();
+

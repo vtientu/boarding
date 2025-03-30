@@ -243,3 +243,53 @@ exports.generateReports = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+exports.deleteUser = async (req, res) => {
+	try {
+		const { userId } = req.params;
+
+		// Kiểm tra userId có hợp lệ không
+		if (!isValidObjectId(userId)) {
+			return res.status(400).json({ msg: "ID người dùng không hợp lệ" });
+		}
+
+		// Tìm user cần xóa
+		const userToDelete = await User.findById(userId);
+		if (!userToDelete) {
+			return res.status(404).json({ msg: "Không tìm thấy người dùng" });
+		}
+
+		// Kiểm tra xem user có phải là chủ trọ không
+		const userRole = await Role.findById(userToDelete.role_id);
+		if (userRole?.role_name === "Owner") {
+			return res.status(403).json({ 
+				msg: "Không thể xóa tài khoản chủ trọ" 
+			});
+		}
+
+		// Kiểm tra xem user có đang thuê phòng không
+		const activeContract = await Contract.findOne({
+			tenant_id: userId,
+			status: "active"
+		});
+
+		if (activeContract) {
+			return res.status(400).json({ 
+				msg: "Không thể xóa người dùng đang có hợp đồng thuê phòng" 
+			});
+		}
+
+		// Xóa user
+		await User.findByIdAndDelete(userId);
+
+		res.status(200).json({ 
+			msg: "Xóa người dùng thành công" 
+		});
+	} catch (error) {
+		console.error("Error in deleteUser:", error);
+		res.status(500).json({ 
+			msg: "Lỗi server khi xóa người dùng",
+			error: error.message 
+		});
+	}
+};
