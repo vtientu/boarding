@@ -14,7 +14,6 @@ const Sidebar = () => {
     { path: "/tenants", label: "QL người thuê" },
     { path: "/contracts", label: "QL Hợp đồng" },
     { path: "/bills", label: "Quản lý hoá đơn" },
-    { path: "/reports", label: "Báo cáo" },
     { path: "/chat", label: "Chat" },
   ];
   return (

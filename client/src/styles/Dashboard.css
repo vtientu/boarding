@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .dashboard-container {
   width: 100%;
   min-height: 100vh;
@@ -27,8 +26,6 @@
   padding: 10px;
 }
 
-=======
->>>>>>> main
 .dashboard-main{
     font-size: 30px;
     height: 100vh;
@@ -45,7 +42,6 @@
   padding: 0 20px
 }
 
-<<<<<<< HEAD
 /* Animation cho các card */
 @keyframes slideIn {
   from {
@@ -190,7 +186,6 @@
   }
 }
 
-=======
 .logout-button{
     background: black;
     color: white;
@@ -216,4 +211,3 @@
     color: #333;
     background-color: white;
   }
->>>>>>> main
