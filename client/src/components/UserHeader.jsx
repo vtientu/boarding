@@ -5,6 +5,7 @@ import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 const UserHeader = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const user = JSON.parse(localStorage.getItem("user"));
 
 	return (
 		<header className="header">
@@ -13,7 +14,7 @@ const UserHeader = () => {
 			</div>
 			<div className="header-right">
 				<div className="user-menu" onClick={() => setMenuOpen(!menuOpen)}>
-					<span className="user-name">Vương Huy</span>
+					<span className="user-name">{user?.name || "User"}</span>
 					<FaUserCircle size={24} className="user-avatar" />
 					{menuOpen && (
 						<div className="dropdown-menu">

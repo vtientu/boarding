@@ -5,6 +5,7 @@ import "../styles/Header.css";
 
 const Header = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const user = JSON.parse(localStorage.getItem("user"));
 
 	return (
 		<header className="header">
@@ -15,7 +16,7 @@ const Header = () => {
 			<div className="header-right">
 				<div className="admin-menu" onClick={() => setMenuOpen(!menuOpen)}>
 					<FaUserCircle className="admin-icon" />
-					<span className="admin-text">Admin</span>
+					<span className="admin-text">{user?.name || "Admin"}</span>
 					{menuOpen && (
 						<div className="dropdown-menu">
 							<Link to="/profile">Hồ sơ</Link>
