@@ -140,10 +140,10 @@ const UserManagement = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        
+
         // Hiển thị thông báo thành công
         alert("Xóa người dùng thành công!");
-        
+
         // Cập nhật lại danh sách người dùng
         fetchUsers();
       } catch (err) {
@@ -187,7 +187,7 @@ const UserManagement = () => {
                 <table>
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th>STT</th>
                       <th>Họ và tên</th>
                       <th>Email</th>
                       <th>Số điện thoại</th>
@@ -198,13 +198,22 @@ const UserManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {users.map((user, index) => (
                       <tr key={user._id}>
-                        <td>{user._id}</td>
+                        <td>{index + 1}</td>
                         <td>{user.name}</td>
                         <td>{user.email}</td>
                         <td>{user.phone}</td>
-                        <td>{user.address}</td>
+                        <td>
+                          <p
+                            style={{
+                              width: "200px",
+                              whiteSpace: "normal",
+                            }}
+                          >
+                            {user.address}
+                          </p>
+                        </td>
                         <td>
                           <span
                             className={`status ${

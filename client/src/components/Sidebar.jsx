@@ -10,7 +10,7 @@ const Sidebar = () => {
   const menuItems = [
     { path: "/dashboard", label: "Trang chủ" },
     { path: "/boarding-houses", label: "QL Nhà trọ" },
-    { path: "/tenants", label: "QL người thuê" },
+    { path: "/tenants", label: "QL Người dùng" },
     { path: "/contracts", label: "QL Hợp đồng" },
     { path: "/bills", label: "Quản lý hoá đơn" },
     { path: "/chat", label: "Nhắn tin" },

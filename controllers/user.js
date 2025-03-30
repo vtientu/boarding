@@ -167,7 +167,7 @@ const registerTenant = async (req, res) => {
 		}
 
 		// Lấy dữ liệu từ request
-		const { name, username, email, password, phone, address, age, gender } =
+		const { name, username, email, password, phone, address, age, gender = 'Other' } =
 			req.body;
 
 		// Kiểm tra dữ liệu đầu vào
@@ -504,7 +504,7 @@ const getUserList = async (req, res) => {
 
 const getTenantCombo = async (req, res) => {
 	try {
-		const tenantRole = await Role.findOne({ role_name: "Tenant", status: "active" });
+		const tenantRole = await Role.findOne({ role_name: "Tenant" });
 		if (!tenantRole) {
 			return res.status(404).json({ msg: "Không tìm thấy role Tenant" });
 		}
