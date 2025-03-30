@@ -209,7 +209,7 @@ const ContractManagement = () => {
   const handleUpdateContract = async (formData) => {
     try {
       const response = await api.put(
-        `/contracts/${selectedContract._id}`,
+        `/contracts/update/${selectedContract._id}`,
         formData
       );
       toast.success("Cập nhật hợp đồng thành công");
@@ -590,13 +590,13 @@ const ContractManagement = () => {
                             >
                               <FaEdit />
                             </button>
-                            <button
+                            {/* <button
                               className="delete-btn"
                               onClick={() => handleDeleteContract(contract._id)}
                               title="Xóa hợp đồng"
                             >
                               <FaTrash />
-                            </button>
+                            </button> */}
                           </div>
                         </td>
                       </tr>

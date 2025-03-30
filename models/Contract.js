@@ -24,6 +24,9 @@ const ContractSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		deposit: {
+			type: Number,
+		},
 		status: {
 			type: String,
 			enum: ["Active", "Expired", "Terminated"],

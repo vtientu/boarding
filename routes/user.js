@@ -13,6 +13,7 @@ const {
 	activeUser,
 	inactiveUser,
 	getTenantCombo,
+	updateUser,
 } = require("../controllers/user");
 const authMiddleware = require("../middleware/auth");
 
@@ -27,5 +28,6 @@ router.get("/", authMiddleware, getUserList);// OKE
 router.get("/tenant/combo", authMiddleware, getTenantCombo);
 router.patch("/active/:userId", authMiddleware, activeUser);// OKE
 router.patch("/inactive/:userId", authMiddleware, inactiveUser);// OKE
+router.put("/profile", authMiddleware, updateUser);
 
 module.exports = router;

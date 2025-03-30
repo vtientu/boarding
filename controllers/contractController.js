@@ -35,4 +35,15 @@ exports.createContract = async (req, res) => {
 	}
 };
 
+exports.updateContract = async (req, res) => {
+	try {
+		const { contractId } = req.params;
+		const { room_id, room_type, user_id, start_date, rental_period, rental_price, deposit } = req.body;
+		const contract = await Contract.findByIdAndUpdate(contractId, { room_id, room_type, user_id, start_date, rental_period, rental_price, deposit });
+		res.status(200).json(contract);
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
 
