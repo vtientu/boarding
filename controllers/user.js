@@ -394,7 +394,7 @@ const getUserList = async (req, res) => {
 			limit = 10,
 			role,
 			search,
-			status = "active",
+			status,
 			gender,
 			age,
 			phone,

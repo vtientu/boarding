@@ -5,6 +5,7 @@ import AddUserModal from "../../components/AddUserModal";
 import SearchFilter from "../../components/SearchFilter";
 import "../../styles/TenantManagement.css";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,6 +97,35 @@ const UserManagement = () => {
     }
   };
 
+  const handleChangeStatus = async (userId, newStatus) => {
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"));
+      const endpoint = newStatus
+        ? `http://localhost:3000/users/active/${userId}`
+        : `http://localhost:3000/users/inactive/${userId}`;
+
+      const response = await axios.patch(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        fetchUsers();
+        toast.success("Cập nhật trạng thái thành công");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.msg || "Có lỗi xảy ra khi thay đổi trạng thái"
+      );
+    }
+  };
+
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
       try {
@@ -158,6 +188,7 @@ const UserManagement = () => {
                       <th>Số điện thoại</th>
                       <th>Địa chỉ</th>
                       <th>Vai trò</th>
+                      <th>Trạng thái</th>
                       <th>Thao tác</th>
                     </tr>
                   </thead>
@@ -183,13 +214,23 @@ const UserManagement = () => {
                           </span>
                         </td>
                         <td>
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              checked={user.status === "active"}
+                              onChange={() =>
+                                handleChangeStatus(
+                                  user._id,
+                                  user.status === "inactive"
+                                )
+                              }
+                            />
+                            <span className="slider round"></span>
+                          </label>
+                        </td>
+                        <td>
                           <div className="action-buttons">
                             <button className="edit-btn">Sửa</button>
-
-                            <label className="switch">
-                              <input type="checkbox" />
-                              <span className="slider round"></span>
-                            </label>
                           </div>
                         </td>
                       </tr>
