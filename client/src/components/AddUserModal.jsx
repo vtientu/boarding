@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./AddUserModal.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 	const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 		age: "",
 		gender: "",
 	});
+	const [showPassword, setShowPassword] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -78,14 +80,23 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 
 					<div className="form-group">
 						<label htmlFor="password">Mật khẩu *</label>
-						<input
-							type="password"
-							id="password"
-							name="password"
-							value={formData.password}
-							onChange={handleChange}
-							required
-						/>
+						<div className="password-input">
+							<input
+								type={showPassword ? "text" : "password"}
+								id="password"
+								name="password"
+								value={formData.password}
+								onChange={handleChange}
+								required
+							/>
+							<button
+								type="button"
+								className="toggle-password"
+								onClick={() => setShowPassword(!showPassword)}
+							>
+								{showPassword ? <FaEyeSlash /> : <FaEye />}
+							</button>
+						</div>
 					</div>
 
 					<div className="form-group">
