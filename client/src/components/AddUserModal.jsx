@@ -22,6 +22,8 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
     if (!formData.username) errors.username = "Tên đăng nhập là bắt buộc";
     if (!formData.email) errors.email = "Email là bắt buộc";
     if (!formData.password) errors.password = "Mật khẩu là bắt buộc";
+    if (!formData.phone) errors.phone = "Số điện thoại là bắt buộc";
+    if (!formData.address) errors.address = "Địa chỉ là bắt buộc";
     if (formData.password.length < 6)
       errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
     return errors;
@@ -67,7 +69,6 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              required
             />
             {error.name && <p className="error-message">{error.name}</p>}
           </div>
@@ -80,7 +81,6 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              required
             />
             {error.username && (
               <p className="error-message">{error.username}</p>
@@ -95,7 +95,6 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
             />
             {error.email && <p className="error-message">{error.email}</p>}
           </div>
@@ -114,7 +113,6 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
               />
               <button
                 type="button"
@@ -142,7 +140,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">Số điện thoại</label>
+            <label htmlFor="phone">Số điện thoại *</label>
             <input
               type="tel"
               id="phone"
@@ -154,7 +152,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="address">Địa chỉ</label>
+            <label htmlFor="address">Địa chỉ *</label>
             <input
               type="text"
               id="address"

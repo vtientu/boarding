@@ -174,7 +174,6 @@ const registerTenant = async (req, res) => {
     const {
       name,
       username,
-      room_id,
       email,
       password,
       phone,
@@ -184,9 +183,9 @@ const registerTenant = async (req, res) => {
     } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
-    if (!name || !username || !email || !password || !room_id) {
+    if (!name || !username || !email || !password) {
       return res.status(400).json({
-        msg: "Please provide name, username, email, password and room_id",
+        msg: "Please provide name, username, email, password",
       });
     }
 
@@ -207,12 +206,11 @@ const registerTenant = async (req, res) => {
     await newUser.save();
 
     // Tạo contract
-    const newContract = new Contract({
-      user_id: newUser._id,
-      room_id,
-      start_date: new Date(),
-      end_date: new Date(),
-    });
+    // const newContract = new Contract({
+    //   user_id: newUser._id,
+    //   start_date: new Date(),
+    //   end_date: new Date(),
+    // });
 
     // Tạo token
     const token = jwt.sign(
