@@ -12,7 +12,7 @@
       "migrate-down": "migrate-mongo down",
       "migrate-status": "migrate-mongo status"
    },
-   "author": "Kuzma02",
+   "author": "TuVT",
    "license": "ISC",
    "dependencies": {
       "axios": "^1.8.4",

@@ -62,71 +62,27 @@ const ContractManagement = () => {
       try {
         setLoading(true);
         // Lấy danh sách phòng trước
-        const roomsResponse = await api.get("/rooms", {
-          params: {
-            search: searchTerm,
-            status: filterStatus,
-          },
-        });
-        if (!roomsResponse?.data?.data) {
-          throw new Error("Không thể lấy danh sách phòng");
+        // const roomsResponse = await api.get("/rooms", {
+
+        const token = JSON.parse(localStorage.getItem("auth"));
+        const responseContract = await axios.get(
+          "http://localhost:3000/contracts",
+          {
+            params: {
+              status: filterStatus,
+              search: searchTerm,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (responseContract.data.data) {
+          const allContracts = responseContract.data.data;
+          console.log("All contracts:", allContracts);
+          setContracts(allContracts);
         }
-        const rooms = roomsResponse.data.data;
-
-        // Lấy hợp đồng cho từng phòng
-        const contractsPromises = rooms.map(async (room) => {
-          if (!room || !room._id) {
-            return [];
-          }
-          try {
-            const response = await api.get(`/contracts/room/${room._id}`);
-
-            // Kiểm tra response và data
-            if (!response || !response.data) {
-              console.warn(`Invalid response for room ${room._id}:`, response);
-              return [];
-            }
-
-            // Nếu response.data là một mảng, trả về trực tiếp
-            if (Array.isArray(response.data)) {
-              return response.data;
-            }
-
-            // Nếu response.data là một object đơn lẻ, chuyển thành mảng
-            if (typeof response.data === "object" && response.data !== null) {
-              return [response.data];
-            }
-
-            // Nếu response.data có thuộc tính data, trả về data
-            if (response.data.data) {
-              return Array.isArray(response.data.data)
-                ? response.data.data
-                : [response.data.data];
-            }
-
-            console.warn(
-              `No valid data found for room ${room._id}:`,
-              response.data
-            );
-            return [];
-          } catch (error) {
-            console.error(
-              `Error fetching contracts for room ${room._id}:`,
-              error
-            );
-            if (error.response?.status === 500) {
-              toast.error(
-                `Lỗi server khi lấy hợp đồng phòng ${room.room_number}`
-              );
-            }
-            return [];
-          }
-        });
-
-        const contractsArrays = await Promise.all(contractsPromises);
-        const allContracts = contractsArrays.flat();
-        console.log("All contracts:", allContracts);
-        setContracts(allContracts);
       } catch (err) {
         console.error("Error fetching contracts:", err);
         if (err.response?.status === 500) {
@@ -148,9 +104,9 @@ const ContractManagement = () => {
 
   const filterOptions = [
     { value: "", label: "Tất cả trạng thái" },
-    { value: "Available", label: "Đang hoạt động" },
-    { value: "Occupied", label: "Đã thuê" },
-    { value: "Maintenance", label: "Đang bảo trì" },
+    { value: "Active", label: "Đang thuê" },
+    { value: "Expired", label: "Đã hết hạn" },
+    { value: "Terminated", label: "Đã hủy" },
   ];
 
   const handleCreateContract = async (formData) => {

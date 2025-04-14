@@ -10,6 +10,9 @@ router.use(roleMiddleware(["Owner"]));
 // Room Management
 router.get("/rooms", ownerController.manageRooms); // done
 
+// Dashboard
+router.get("/dashboard", ownerController.getDashboard); // OKE
+
 // Tenant Management - done
 router.post("/tenants", ownerController.manageTenants); // done
 router.get("/tenants/:id", ownerController.manageTenants); // done

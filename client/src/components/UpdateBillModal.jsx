@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "../styles/UpdateBillModal.css";
@@ -19,6 +19,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
       additional_notes: "",
     },
   });
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -67,6 +68,9 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        params: {
+          status: "Occupied",
+        },
       });
       setRooms(response.data.data);
     } catch (error) {
@@ -76,6 +80,19 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
       );
     }
   };
+
+  const tanentName = useMemo(() => {
+    return (
+      rooms.find((item) => item._id === formData.room_id)?.tenant_id?.name || ""
+    );
+  }, [rooms, formData.room_id]);
+
+  const roomPrice = useMemo(() => {
+    return (
+      rooms.find((item) => item._id === formData.room_id)?.contract
+        ?.rental_price || ""
+    );
+  }, [rooms, formData.room_id]);
 
   useEffect(() => {
     if (bill) {
@@ -103,6 +120,14 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
           ...prev.details,
           additional_notes: value,
         },
+      }));
+    } else if (name === "room_id") {
+      setFormData((prev) => ({
+        ...prev,
+        room_id: value,
+        tenant_id: rooms.find((item) => item._id === value)?.tenant_id?._id,
+        room_price: rooms.find((item) => item._id === value)?.contract
+          ?.rental_price,
       }));
     } else {
       setFormData((prev) => ({
@@ -235,19 +260,17 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                 <div className="form-group">
                   <label className="form-label">Người thanh toán</label>
                   <div>
-                    <select
-                      name="tenant_id"
-                      value={formData.tenant_id}
-                      onChange={handleChange}
-                      style={inputStyle}
-                    >
-                      <option value="">Chọn người thanh toán</option>
-                      {tenant.map((room) => (
-                        <option key={room._id} value={room._id}>
-                          {room.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <input
+                        type="text"
+                        name="tenant_id"
+                        className="form-input"
+                        value={tanentName}
+                        disabled
+                        placeholder="Người thanh toán"
+                        style={inputStyle}
+                      />
+                    </div>
                     {errors.tenant_id && (
                       <div className="error-message">{errors.tenant_id}</div>
                     )}
@@ -259,12 +282,12 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
               <label className="form-label">Tiền phòng</label>
               <div>
                 <input
-                  type="number"
+                  type="text"
                   name="room_price"
                   className="form-input"
-                  value={formData.room_price}
-                  onChange={handleChange}
-                  placeholder="Nhập tiền phòng"
+                  value={roomPrice.toLocaleString("vi-VN")}
+                  disabled
+                  placeholder="Tiền phòng"
                   style={inputStyle}
                 />
               </div>

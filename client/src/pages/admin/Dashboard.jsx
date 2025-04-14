@@ -23,7 +23,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/v1/dashboard",
+        "http://localhost:3000/owners/dashboard",
         axiosConfig
       );
       setData(response.data);
@@ -38,7 +38,7 @@ const Dashboard = () => {
       toast.warn("Please login first to access dashboard");
       return;
     }
-    // fetchDashboardData();
+    fetchDashboardData();
   }, [token]);
 
   return (
@@ -48,18 +48,26 @@ const Dashboard = () => {
         <Sidebar />
         <main className="main-content">
           <div className="stats-container">
-            <DashboardCard title="Tổng số phòng" value="10" icon="🏠" />
             <DashboardCard
-              title="Số phòng đang hoạt động"
-              value="8"
+              title="Tổng số phòng"
+              value={data?.totalRooms?.toLocaleString("vi-VN")}
+              icon="🏠"
+            />
+            <DashboardCard
+              title="Số phòng đã thuê"
+              value={data?.totalRoomsOccupied?.toLocaleString("vi-VN")}
               icon="🔑"
             />
             <DashboardCard
-              title="Lượng tiêu thụ điện, nước"
-              value="1,234,000 VND"
-              icon="💡"
+              title="Số người thuê trọ"
+              value={data?.totalTenants?.toLocaleString("vi-VN")}
+              icon="👥"
             />
-            <DashboardCard title="Doanh thu" value="12,345,000 VND" icon="💰" />
+            <DashboardCard
+              title="Doanh thu (VNĐ)"
+              value={`${data?.totalRevenue?.toLocaleString("vi-VN")}`}
+              icon="💰"
+            />
           </div>
           {/* Thêm các phần nội dung khác ở đây */}
         </main>

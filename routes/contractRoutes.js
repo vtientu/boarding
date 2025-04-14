@@ -5,9 +5,11 @@ const {
 	getContractByRoomId,
 	createContract,
 	updateContract,
+	getContracts,
 } = require("../controllers/contractController");
 const router = express.Router();
 
+router.get("/", authenticationMiddleware, getContracts);
 router.get("/user/:userId", authenticationMiddleware, getContractByUid);
 router.get("/room/:roomId", authenticationMiddleware, getContractByRoomId);
 router.post("/create", authenticationMiddleware, createContract);

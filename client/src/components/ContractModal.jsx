@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import { FaTimes, FaExclamationCircle } from "react-icons/fa";
 import "../styles/ContractModal.css";
@@ -7,7 +7,6 @@ import axios from "axios";
 const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
   const [formData, setFormData] = useState({
     room_id: "",
-    room_type: "",
     user_id: "",
     start_date: "",
     rental_period: "",
@@ -47,6 +46,9 @@ const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
       const roomsResponse = await axios.get(
         "http://localhost:3000/rooms/combo",
         {
+          params: {
+            status: "Available",
+          },
           headers,
         }
       );
@@ -76,7 +78,6 @@ const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
     const newErrors = {};
 
     if (!formData.room_id) newErrors.room_id = "Vui lòng nhập số phòng";
-    if (!formData.room_type) newErrors.room_type = "Vui lòng nhập loại phòng";
     if (!formData.user_id) newErrors.user_id = "Vui lòng chọn người thuê";
     if (!formData.start_date)
       newErrors.start_date = "Vui lòng chọn ngày bắt đầu";
@@ -120,7 +121,6 @@ const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
       if (mode === "edit" && contract) {
         setFormData({
           room_id: contract.room_id?._id || "",
-          room_type: contract.room_id?.room_type || "",
           user_id: contract.user_id?._id || "",
           start_date: new Date(contract.start_date).toISOString().split("T")[0],
           rental_period: contract.rental_period || "",
@@ -170,14 +170,14 @@ const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
               )}
             </div>
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label className="form-label">Loại phòng</label>
               <input
                 type="text"
                 name="room_type"
-                value={formData.room_type}
-                onChange={handleChange}
+                value={roomType}
                 className="form-input"
+                disabled
                 placeholder="Nhập loại phòng"
               />
               {errors.room_type && (
@@ -185,7 +185,7 @@ const ContractModal = ({ isOpen, onClose, contract, onSubmit, mode }) => {
                   <FaExclamationCircle /> {errors.room_type}
                 </div>
               )}
-            </div>
+            </div> */}
 
             <div className="form-group">
               <label className="form-label">Người thuê</label>

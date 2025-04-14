@@ -7,6 +7,7 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 router.use(authMiddleware);
 router.use(roleMiddleware(["Tenant"]));
 
+router.get("/dashboard", tenantController.getTenantDashboard); // done
 router.patch("/profile", tenantController.updateTenantProfile); // done
 router.get("/profile", tenantController.getTenantProfile); // done
 router.get("/contracts", tenantController.getTenantContracts); // done
