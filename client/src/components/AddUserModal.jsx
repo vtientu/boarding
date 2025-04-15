@@ -60,7 +60,21 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "10px",
+          }}
+        >
+          <h3
+            style={{
+              gridColumn: "1 / 3",
+            }}
+          >
+            Thông tin chung
+          </h3>
           <div className="form-group">
             <label htmlFor="name">Họ và tên *</label>
             <input
@@ -180,6 +194,13 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 
           {formData.role === "Tenant" && (
             <>
+              <h3
+                style={{
+                  gridColumn: "1 / 3",
+                }}
+              >
+                Thông tin người thuê
+              </h3>
               <div className="form-group">
                 <label htmlFor="age">Tuổi</label>
                 <input
@@ -212,7 +233,12 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
             </>
           )}
 
-          <div className="modal-footer">
+          <div
+            className="modal-footer"
+            style={{
+              gridColumn: "1 / 3",
+            }}
+          >
             <button type="button" className="cancel-button" onClick={onClose}>
               Hủy
             </button>

@@ -6,8 +6,11 @@ import "../../styles/Dashboard.css";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import DashboardCard from "../../components/DashboardCard";
-
+import RoomListModal from "../../components/RoomListModal";
+import RoomOccupiedModal from "../../components/RoomOccupiedModal";
 const Dashboard = () => {
+  const [open, setOpen] = useState(false);
+  const [openOccupied, setOpenOccupied] = useState(false);
   const [token, setToken] = useState(
     JSON.parse(localStorage.getItem("auth")) || ""
   );
@@ -52,11 +55,13 @@ const Dashboard = () => {
               title="Tổng số phòng"
               value={data?.totalRooms?.toLocaleString("vi-VN")}
               icon="🏠"
+              onClick={() => setOpen(true)}
             />
             <DashboardCard
               title="Số phòng đã thuê"
               value={data?.totalRoomsOccupied?.toLocaleString("vi-VN")}
               icon="🔑"
+              onClick={() => setOpenOccupied(true)}
             />
             <DashboardCard
               title="Số người thuê trọ"
@@ -71,6 +76,11 @@ const Dashboard = () => {
           </div>
           {/* Thêm các phần nội dung khác ở đây */}
         </main>
+        <RoomListModal open={open} onClose={() => setOpen(false)} />
+        <RoomOccupiedModal
+          open={openOccupied}
+          onClose={() => setOpenOccupied(false)}
+        />
       </div>
     </div>
   );
