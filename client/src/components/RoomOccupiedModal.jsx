@@ -3,10 +3,9 @@ import { useEffect, useState } from "react";
 
 const RoomOccupiedModal = ({ open, onClose }) => {
   const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("auth");
+    const token = JSON.parse(localStorage.getItem("auth"));
     const fetchRooms = async () => {
       const response = await axios.get("http://localhost:3000/rooms", {
         headers: {

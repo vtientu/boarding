@@ -466,14 +466,14 @@ const ContractManagement = () => {
           <div className="contract-management">
             <div className="contract-header">
               <h2>Quản Lý Hợp Đồng</h2>
-              <div className="header-buttons">
+              {/* <div className="header-buttons">
                 <button
                   className="create-contract-btn"
                   onClick={() => setIsCreateModalOpen(true)}
                 >
                   <FaPlus /> Tạo hợp đồng
                 </button>
-              </div>
+              </div> */}
             </div>
 
             <SearchFilter

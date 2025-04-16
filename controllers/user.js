@@ -10,7 +10,7 @@ const {
 } = require("../utils/emailService");
 const { isValidObjectId } = require("mongoose");
 const Contract = require("../models/Contract");
-
+const Room = require("../models/Room");
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -88,7 +88,16 @@ const registerOwner = async (req, res) => {
     }
 
     // Lấy dữ liệu từ request
-    const { name, username, email, password, phone, address } = req.body;
+    const {
+      name,
+      username,
+      email,
+      password,
+      phone,
+      address,
+      age,
+      gender = "Other",
+    } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
     if (!name || !username || !email || !password) {
@@ -105,6 +114,8 @@ const registerOwner = async (req, res) => {
       password,
       phone,
       address,
+      gender,
+      age,
       role_id: ownerRole._id,
     });
 
@@ -180,6 +191,11 @@ const registerTenant = async (req, res) => {
       address,
       age,
       gender = "Other",
+      room_id,
+      start_date,
+      rental_period,
+      deposit,
+      description,
     } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
@@ -204,6 +220,32 @@ const registerTenant = async (req, res) => {
 
     // Lưu người dùng
     await newUser.save();
+
+    if (room_id && start_date && rental_period && deposit) {
+      // Tạo contract
+      const end_date = new Date(start_date);
+      const room = await Room.findById(room_id);
+      end_date.setMonth(end_date.getMonth() + rental_period);
+      const contract = await Contract.create({
+        room_id,
+        user_id: newUser._id,
+        start_date,
+        end_date,
+        rental_price: room.month_rent,
+        deposit,
+        description,
+        end_date,
+        rental_period,
+      });
+      await Room.findByIdAndUpdate(room_id, {
+        tenant_id: newUser._id,
+        status: "Occupied",
+      });
+    } else {
+      return res.status(400).json({
+        msg: "Please provide room_id, user_id, start_date, rental_period, rental_price, deposit",
+      });
+    }
 
     // Tạo contract
     // const newContract = new Contract({
@@ -430,6 +472,7 @@ const getUserList = async (req, res) => {
     // Lọc theo role
     if (role) {
       const roleDoc = await Role.findOne({ role_name: role });
+
       if (roleDoc) {
         query.role_id = roleDoc._id;
       }

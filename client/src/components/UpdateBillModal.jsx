@@ -2,6 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "../styles/UpdateBillModal.css";
+import {
+  ELECTRICITY_PRICE,
+  WATER_PRICE,
+} from "../../../constants/app.constant";
 
 const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
   const token = JSON.parse(localStorage.getItem("auth"));
@@ -12,8 +16,10 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
     room_price: "",
     electricity: "",
     water: "",
-    additional_services: "",
-    payment_deadline: "",
+    additional_services: 100000,
+    payment_deadline: new Date(new Date().setDate(new Date().getDate() + 15))
+      .toISOString()
+      .split("T")[0],
     room_id: "",
     details: {
       additional_notes: "",
@@ -28,8 +34,10 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
       room_price: "",
       electricity: "",
       water: "",
-      additional_services: "",
-      payment_deadline: "",
+      additional_services: 100000,
+      payment_deadline: new Date(new Date().setDate(new Date().getDate() + 15))
+        .toISOString()
+        .split("T")[0],
       room_id: "",
       details: {
         additional_notes: "",
@@ -81,18 +89,19 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
     }
   };
 
-  const tanentName = useMemo(() => {
-    return (
-      rooms.find((item) => item._id === formData.room_id)?.tenant_id?.name || ""
-    );
-  }, [rooms, formData.room_id]);
-
-  const roomPrice = useMemo(() => {
-    return (
-      rooms.find((item) => item._id === formData.room_id)?.contract
-        ?.rental_price || ""
-    );
-  }, [rooms, formData.room_id]);
+  useEffect(() => {
+    if (!bill) {
+      setFormData((prev) => ({
+        ...prev,
+        room_price:
+          rooms.find((item) => item._id === formData.room_id)?.contract
+            ?.rental_price || "",
+        tenant_id:
+          rooms.find((item) => item._id === formData.room_id)?.tenant_id
+            ?.name || "",
+      }));
+    }
+  }, [rooms, formData.room_id, bill]);
 
   useEffect(() => {
     if (bill) {
@@ -165,7 +174,13 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
       const response = bill
         ? await axios.put(
             `http://localhost:3000/owners/bills/${bill._id}`,
-            formData,
+            {
+              ...formData,
+              electricity: (formData.electricity || 0) * ELECTRICITY_PRICE,
+              water: (formData.water || 0) * WATER_PRICE,
+              tenant_id: rooms.find((item) => item._id === formData.room_id)
+                ?.tenant_id?._id,
+            },
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -175,7 +190,13 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
           )
         : await axios.post(
             "http://localhost:3000/owners/bills/create",
-            formData,
+            {
+              ...formData,
+              electricity: (formData.electricity || 0) * ELECTRICITY_PRICE,
+              water: (formData.water || 0) * WATER_PRICE,
+              tenant_id: rooms.find((item) => item._id === formData.room_id)
+                ?.tenant_id?._id,
+            },
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -265,7 +286,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                         type="text"
                         name="tenant_id"
                         className="form-input"
-                        value={tanentName}
+                        value={formData.tenant_id}
                         disabled
                         placeholder="Người thanh toán"
                         style={inputStyle}
@@ -285,7 +306,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   type="text"
                   name="room_price"
                   className="form-input"
-                  value={roomPrice.toLocaleString("vi-VN")}
+                  value={formData.room_price.toLocaleString("vi-VN")}
                   disabled
                   placeholder="Tiền phòng"
                   style={inputStyle}
@@ -297,7 +318,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Tiền điện</label>
+              <label className="form-label">Số điện</label>
               <div>
                 <input
                   type="number"
@@ -305,7 +326,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   className="form-input"
                   value={formData.electricity}
                   onChange={handleChange}
-                  placeholder="Nhập tiền điện"
+                  placeholder="Nhập số điện"
                   style={inputStyle}
                 />
               </div>
@@ -315,7 +336,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Tiền nước</label>
+              <label className="form-label">Số nước</label>
               <div>
                 <input
                   type="number"
@@ -323,7 +344,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   className="form-input"
                   value={formData.water}
                   onChange={handleChange}
-                  placeholder="Nhập tiền nước"
+                  placeholder="Nhập số nước"
                   style={inputStyle}
                 />
               </div>
@@ -339,9 +360,9 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   type="number"
                   name="additional_services"
                   className="form-input"
-                  value={formData.additional_services}
+                  value={formData?.additional_services?.toLocaleString("vi-VN")}
                   onChange={handleChange}
-                  placeholder="Nhập tiền dịch vụ khác"
+                  disabled
                   style={inputStyle}
                 />
               </div>
@@ -359,6 +380,7 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                 name="payment_deadline"
                 className="form-input"
                 value={formData.payment_deadline}
+                disabled
                 onChange={handleChange}
                 style={inputStyle}
               />

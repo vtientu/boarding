@@ -116,7 +116,7 @@ const seedDatabase = async () => {
       room_id: rooms[0]._id,
       start_date: new Date(),
       end_date: new Date(new Date().setMonth(new Date().getMonth() + 12)),
-      rental_price: 3000000,
+      rental_price: rooms[0].month_rent,
       status: "Active",
       description: "Hợp đồng thuê phòng P101",
       rental_period: 12,
@@ -131,7 +131,7 @@ const seedDatabase = async () => {
     const bill = await Bill.create({
       room_id: rooms[0]._id,
       tenant_id: tenant._id,
-      room_price: 3000000,
+      room_price: rooms[0].month_rent,
       electricity: 500000,
       water: 200000,
       additional_services: 100000,
@@ -142,7 +142,7 @@ const seedDatabase = async () => {
         water_index_start: 50,
         water_index_end: 70,
       },
-      status: "Pending",
+      status: "Paid",
     });
 
     // Tạo Payment
@@ -152,7 +152,11 @@ const seedDatabase = async () => {
       contract_id: contract._id,
       payment_date: new Date(),
       payment_method: "Bank Transfer",
-      total_amount: 3800000,
+      total_amount:
+        bill.room_price +
+        bill.electricity +
+        bill.water +
+        bill.additional_services,
       payment_status: "Completed",
       transaction_code: "TR" + Math.random().toString(36).substr(2, 9),
     });

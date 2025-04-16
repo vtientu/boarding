@@ -1,19 +1,21 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-const RoomListModal = ({ open, onClose }) => {
+const PeopleOccupiedModal = ({ open, onClose }) => {
   const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = JSON.parse(localStorage.getItem("auth"));
     const fetchRooms = async () => {
-      const response = await axios.get("http://localhost:3000/rooms", {
+      const response = await axios.get("http://localhost:3000/users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          role: "Tenant",
+        },
       });
-      setRooms(response.data.data);
+      setRooms(response.data.users);
     };
     fetchRooms();
   }, []);
@@ -30,7 +32,7 @@ const RoomListModal = ({ open, onClose }) => {
         }}
       >
         <div className="modal-header">
-          <h2>Danh sách phòng</h2>
+          <h2>Danh sách người thuê</h2>
           <button className="close-button" onClick={onClose}>
             &times;
           </button>
@@ -51,27 +53,21 @@ const RoomListModal = ({ open, onClose }) => {
           >
             <thead>
               <tr>
-                <th>Số phòng</th>
-                <th>Loại phòng</th>
-                <th>Giá thuê</th>
-                <th>Sức chứa</th>
-                <th>Trạng thái</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Giới tính</th>
               </tr>
             </thead>
             <tbody>
               {rooms.map((room) => (
                 <tr key={room._id}>
-                  <td>{room.room_number}</td>
-                  <td>{room.room_type}</td>
-                  <td>{room.month_rent?.toLocaleString("vi-VN")}</td>
-                  <td>{room.capacity}</td>
+                  <td>{room.name}</td>
+                  <td>{room.email}</td>
+                  <td>{room.phone}</td>
                   <td>
-                    <span className={`status ${room.status.toLowerCase()}`}>
-                      {room.status === "Available"
-                        ? "Trống"
-                        : room.status === "Occupied"
-                        ? "Đã thuê"
-                        : "Đang sửa"}
+                    <span className={`status ${room.gender.toLowerCase()}`}>
+                      {room.gender === "Male" ? "Nam" : "Nữ"}
                     </span>
                   </td>
                 </tr>
@@ -84,4 +80,4 @@ const RoomListModal = ({ open, onClose }) => {
   );
 };
 
-export default RoomListModal;
+export default PeopleOccupiedModal;
