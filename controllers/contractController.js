@@ -62,6 +62,7 @@ exports.createContract = async (req, res) => {
       rental_period,
       rental_price,
       deposit,
+      description,
     } = req.body;
     const end_date = new Date(start_date);
     end_date.setMonth(end_date.getMonth() + rental_period);
@@ -72,6 +73,7 @@ exports.createContract = async (req, res) => {
       end_date,
       rental_price,
       deposit,
+      description,
       end_date,
       rental_period,
     });

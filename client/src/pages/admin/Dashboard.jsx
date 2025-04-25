@@ -6,8 +6,15 @@ import "../../styles/Dashboard.css";
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import DashboardCard from "../../components/DashboardCard";
-
+import RoomListModal from "../../components/RoomListModal";
+import RoomOccupiedModal from "../../components/RoomOccupiedModal";
+import PeopleOccupiedModal from "../../components/PeopleOccupiedModal";
+import RevenueModal from "../../components/RevenueModal";
 const Dashboard = () => {
+  const [open, setOpen] = useState(false);
+  const [openOccupied, setOpenOccupied] = useState(false);
+  const [openPeople, setOpenPeople] = useState(false);
+  const [openRevenue, setOpenRevenue] = useState(false);
   const [token, setToken] = useState(
     JSON.parse(localStorage.getItem("auth")) || ""
   );
@@ -52,25 +59,42 @@ const Dashboard = () => {
               title="Tổng số phòng"
               value={data?.totalRooms?.toLocaleString("vi-VN")}
               icon="🏠"
+              onClick={() => setOpen(true)}
             />
             <DashboardCard
               title="Số phòng đã thuê"
               value={data?.totalRoomsOccupied?.toLocaleString("vi-VN")}
               icon="🔑"
+              onClick={() => setOpenOccupied(true)}
             />
             <DashboardCard
               title="Số người thuê trọ"
               value={data?.totalTenants?.toLocaleString("vi-VN")}
               icon="👥"
+              onClick={() => setOpenPeople(true)}
             />
             <DashboardCard
               title="Doanh thu (VNĐ)"
               value={`${data?.totalRevenue?.toLocaleString("vi-VN")}`}
               icon="💰"
+              onClick={() => setOpenRevenue(true)}
             />
           </div>
           {/* Thêm các phần nội dung khác ở đây */}
         </main>
+        <RoomListModal open={open} onClose={() => setOpen(false)} />
+        <RoomOccupiedModal
+          open={openOccupied}
+          onClose={() => setOpenOccupied(false)}
+        />
+        <PeopleOccupiedModal
+          open={openPeople}
+          onClose={() => setOpenPeople(false)}
+        />
+        <RevenueModal
+          open={openRevenue}
+          onClose={() => setOpenRevenue(false)}
+        />
       </div>
     </div>
   );

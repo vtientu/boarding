@@ -1,0 +1,3 @@
+export const ELECTRICITY_PRICE = 4000;
+export const WATER_PRICE = 20000;
+export const ADDITIONAL_SERVICES_PRICE = 100;
