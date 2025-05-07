@@ -5,7 +5,7 @@ import "../styles/Sidebar.css";
 const Sidebar = () => {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
-  const isAdmin = user.role_id.role_name === "Owner";
+  const isAdmin = user?.role_id?.role_name === "Owner";
 
   const menuItems = [
     { path: "/dashboard", label: "Trang chủ" },
@@ -14,6 +14,7 @@ const Sidebar = () => {
     { path: "/contracts", label: "QL Hợp đồng" },
     { path: "/bills", label: "Quản lý hoá đơn" },
     { path: "/chat", label: "Nhắn tin" },
+    { path: "/revenue-statistics", label: "Thống kê doanh thu" },
   ];
   return (
     <div className="sidebar">

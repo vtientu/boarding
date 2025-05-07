@@ -239,11 +239,19 @@ exports.sendNotification = async (req, res) => {
 
 exports.getBills = async (req, res) => {
   try {
-    const { status, search } = req.query;
+    const { status, search, fromDate, toDate } = req.query;
     const query = {};
 
     if (status) {
       query.status = status;
+    }
+
+    if (fromDate) {
+      query.createdAt = { $gte: new Date(fromDate) };
+    }
+
+    if (toDate) {
+      query.createdAt = { $lte: new Date(toDate) };
     }
 
     // const { page = 1, limit = 10 } = req.query;
@@ -264,6 +272,16 @@ exports.getBills = async (req, res) => {
       );
     }
 
+    const totalIncome = bills.reduce(
+      (acc, bill) =>
+        acc +
+        bill.room_price +
+        bill.electricity +
+        bill.water +
+        bill.additional_services,
+      0
+    );
+
     const totalBills = await Bill.countDocuments({
       room_id: {
         $in: await Room.find({ landlord_id: req.user.id }).select("_id"),
@@ -273,7 +291,62 @@ exports.getBills = async (req, res) => {
     return res.status(200).json({
       data: bills,
       totalData: totalBills,
+      totalIncome: totalIncome,
     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getRevenueStatisticsForYear = async (req, res) => {
+  try {
+    const { year } = req.params;
+
+    if (!year) {
+      return res.status(400).json({ message: "Year is required" });
+    }
+
+    if (isNaN(year)) {
+      return res.status(400).json({ message: "Invalid year" });
+    }
+
+    const bills = await Bill.find({
+      status: "Paid",
+      updatedAt: {
+        $gte: new Date(`${year}-01-01`),
+        $lte: new Date(`${year}-12-31`),
+      },
+    });
+
+    // Mảng dạng [{month:1 , revenue: 1000000}]
+
+    const revenuePerMonth = Array.from({ length: 12 }, (_, i) => {
+      const month = i + 1;
+      const revenue = bills
+        .filter((bill) => bill.updatedAt.getMonth() + 1 === month)
+        .reduce(
+          (acc, bill) =>
+            acc +
+            (bill?.room_price +
+              bill?.electricity +
+              bill?.water +
+              bill?.additional_services),
+          0
+        );
+      return { month, revenue };
+    });
+
+    const totalIncome = bills.reduce(
+      (acc, bill) =>
+        acc +
+        (bill?.room_price +
+          bill?.electricity +
+          bill?.water +
+          bill?.additional_services),
+      0
+    );
+
+    res.status(200).json({ data: revenuePerMonth, totalIncome });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

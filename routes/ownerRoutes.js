@@ -27,6 +27,12 @@ router.post("/bills/send-notification", ownerController.sendNotification); // OK
 router.post("/bills/create", ownerController.createBill); // OKE
 router.put("/bills/:id", ownerController.updateBill); // OKE
 
+// Revenue Statistics
+router.get(
+  "/revenue-statistics/:year",
+  ownerController.getRevenueStatisticsForYear
+); // OKE
+
 // Reports
 router.get("/reports", ownerController.generateReports); // OKE
 

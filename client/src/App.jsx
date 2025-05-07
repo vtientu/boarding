@@ -22,6 +22,7 @@ import Payment from "./pages/tenant/Payment";
 import ChangePassword from "./pages/tenant/ChangePassword";
 import ContractManagement from "./pages/admin/ContractManagement";
 import ChangeForgotPassword from "./pages/client/ChangeForgotPassword";
+import RevenueStatistics from "./pages/admin/RevenueStatistics";
 
 const router = createBrowserRouter([
   {
@@ -161,6 +162,10 @@ const router = createBrowserRouter([
       {
         path: "contracts",
         element: <ContractManagement />,
+      },
+      {
+        path: "revenue-statistics",
+        element: <RevenueStatistics />,
       },
     ],
   },
