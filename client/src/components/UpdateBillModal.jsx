@@ -328,6 +328,12 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   onChange={handleChange}
                   placeholder="Nhập số điện"
                   style={inputStyle}
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
+                  min={0}
                 />
               </div>
               {errors.electricity && (
@@ -346,6 +352,12 @@ const UpdateBillModal = ({ isOpen, onClose, bill, onUpdate }) => {
                   onChange={handleChange}
                   placeholder="Nhập số nước"
                   style={inputStyle}
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
+                  min={0}
                 />
               </div>
               {errors.water && (

@@ -220,8 +220,9 @@ const registerTenant = async (req, res) => {
 
     // Lưu người dùng
     await newUser.save();
-
+    console.log(room_id, start_date, rental_period, deposit);
     if (room_id && start_date && rental_period && deposit) {
+      console.log(room_id, start_date, rental_period, deposit);
       // Tạo contract
       const end_date = new Date(start_date);
       const room = await Room.findById(room_id);
@@ -280,6 +281,39 @@ const registerTenant = async (req, res) => {
     });
   }
 };
+
+const updateUserManager = async (req, res) => {
+  const { userId } = req.params;
+  const { name, phone, address, age, gender } = req.body;
+
+  // Kiểm tra dữ liệu đầu vào
+  if (!name || !phone || !address) {
+    return res.status(400).json({
+      msg: "Please provide name, phone, address, age, gender",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = name;
+    user.phone = phone;
+    user.address = address;
+    user.age = age;
+    user.gender = gender;
+
+    await user.save();
+
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error("Error in updateUser:", error);
+  }
+};
+
 // Đổi mật khẩu (yêu cầu đăng nhập)
 const changePassword = async (req, res) => {
   try {
@@ -695,4 +729,5 @@ module.exports = {
   inactiveUser,
   getTenantCombo,
   updateUser,
+  updateUserManager,
 };

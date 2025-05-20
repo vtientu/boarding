@@ -132,6 +132,26 @@ exports.createBill = async (req, res) => {
       image,
     } = req.body;
 
+    // Lấy tháng và năm hiện tại
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    // Kiểm tra xem đã có hóa đơn nào trong tháng này chưa theo createdAt
+    const existingBill = await Bill.findOne({
+      room_id,
+      createdAt: {
+        $gte: new Date(currentYear, currentMonth - 1, 1),
+        $lt: new Date(currentYear, currentMonth, 1),
+      },
+    });
+
+    if (existingBill) {
+      return res.status(400).json({
+        message: "Đã tồn tại hóa đơn cho phòng này trong tháng này",
+      });
+    }
+
     const bill = await Bill.create({
       room_id,
       tenant_id,

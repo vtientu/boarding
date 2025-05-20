@@ -342,15 +342,6 @@ const BoardingHouseDetail = () => {
                 >
                   Sửa thông tin
                 </button>
-                <button
-                  className="delete-btn"
-                  onClick={handleDeleteBoardingHouse}
-                  style={{
-                    color: "white",
-                  }}
-                >
-                  Xóa nhà trọ
-                </button>
               </div>
             </div>
 
@@ -480,7 +471,13 @@ const BoardingHouseDetail = () => {
                                 </button>
                                 <button
                                   className="delete-btn"
-                                  onClick={() => handleDeleteRoom(room._id)}
+                                  onClick={() => {
+                                    if (room.status === "Occupied") {
+                                      alert("Không thể xóa phòng đã thuê");
+                                    } else {
+                                      handleDeleteRoom(room._id);
+                                    }
+                                  }}
                                 >
                                   Xóa
                                 </button>

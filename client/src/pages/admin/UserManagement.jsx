@@ -20,6 +20,8 @@ const UserManagement = () => {
     total: 0,
     pages: 0,
   });
+  const [editingUser, setEditingUser] = useState(null);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
 
   const filterOptions = [
     { value: "", label: "Tất cả trạng thái" },
@@ -93,7 +95,9 @@ const UserManagement = () => {
       fetchUsers();
       setIsAddUserModalOpen(false);
     } catch (err) {
-      setError(err.response?.data?.msg || "Có lỗi xảy ra khi thêm người dùng");
+      toast.error(
+        err.response?.data?.msg || "Có lỗi xảy ra khi thêm người dùng"
+      );
     }
   };
 
@@ -120,7 +124,7 @@ const UserManagement = () => {
         toast.success("Cập nhật trạng thái thành công");
       }
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.msg || "Có lỗi xảy ra khi thay đổi trạng thái"
       );
     }
@@ -147,8 +151,39 @@ const UserManagement = () => {
         // Cập nhật lại danh sách người dùng
         fetchUsers();
       } catch (err) {
-        setError(err.response?.data?.msg || "Có lỗi xảy ra khi xóa người dùng");
+        toast.error(
+          err.response?.data?.msg || "Có lỗi xảy ra khi xóa người dùng"
+        );
       }
+    }
+  };
+
+  const handleUpdateUser = async (userData) => {
+    console.log(editingUser);
+
+    try {
+      const token = JSON.parse(localStorage.getItem("auth"));
+      if (!token) {
+        setError("Vui lòng đăng nhập để thực hiện thao tác này");
+        return;
+      }
+      await axios.put(
+        `http://localhost:3000/users/${editingUser?._id}`,
+        userData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchUsers();
+      setIsEditUserModalOpen(false);
+      setEditingUser(null);
+      toast.success("Cập nhật người dùng thành công!");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.msg || "Có lỗi xảy ra khi cập nhật người dùng"
+      );
     }
   };
 
@@ -244,7 +279,17 @@ const UserManagement = () => {
                         </td>
                         <td>
                           <div className="action-buttons">
-                            <button className="edit-btn">Sửa</button>
+                            {user.role_id?.role_name !== "Owner" && (
+                              <button
+                                className="edit-btn"
+                                onClick={() => {
+                                  setEditingUser(user);
+                                  setIsEditUserModalOpen(true);
+                                }}
+                              >
+                                Sửa
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -291,6 +336,15 @@ const UserManagement = () => {
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
         onSubmit={handleAddUser}
+      />
+      <AddUserModal
+        isOpen={isEditUserModalOpen}
+        onClose={() => {
+          setIsEditUserModalOpen(false);
+          setEditingUser(null);
+        }}
+        onSubmit={handleUpdateUser}
+        user={editingUser}
       />
     </div>
   );

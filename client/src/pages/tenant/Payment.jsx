@@ -226,7 +226,7 @@ const Payment = () => {
                       <h3>Danh sách hóa đơn</h3>
                     </div>
                     <div className="bills-list">
-                      {bills.map((bill) => (
+                      {bills?.slice(0, 1)?.map((bill) => (
                         <div
                           key={bill._id}
                           className={`bill-item ${

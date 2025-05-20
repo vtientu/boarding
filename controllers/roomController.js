@@ -303,6 +303,9 @@ const deleteRoom = async (req, res) => {
     // Xóa phòng
     await Room.findByIdAndDelete(id);
 
+    // Xóa hợp đồng liên quan
+    await Contract.deleteMany({ room_id: id });
+
     res.status(200).json({ msg: "Room deleted successfully" });
   } catch (error) {
     console.error("Error deleting room:", error);

@@ -161,12 +161,6 @@ const BoardingHouseManagement = () => {
           <div className="boarding-house-management">
             <div className="boarding-house-header">
               <h2>Quản Lý Nhà Trọ</h2>
-              <button
-                className="add-boarding-house-btn"
-                onClick={() => setIsModalOpen(true)}
-              >
-                + Thêm nhà trọ mới
-              </button>
             </div>
 
             <AddBoardingHouseModal
@@ -223,14 +217,6 @@ const BoardingHouseManagement = () => {
                                 onClick={() => handleEditBoardingHouse(house)}
                               >
                                 Sửa
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={() =>
-                                  handleDeleteBoardingHouse(house._id)
-                                }
-                              >
-                                Xóa
                               </button>
                             </div>
                           </td>

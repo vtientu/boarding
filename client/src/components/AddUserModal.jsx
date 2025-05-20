@@ -3,10 +3,10 @@ import "./AddUserModal.css";
 import { FaExclamationCircle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axios from "axios";
+import PropTypes from "prop-types";
 
-const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
+const AddUserModal = ({ isOpen, onClose, onSubmit, user }) => {
   const [error, setError] = useState("");
-  const [users, setUsers] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -32,10 +32,10 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
     if (!formData.name) errors.name = "Họ và tên là bắt buộc";
     if (!formData.username) errors.username = "Tên đăng nhập là bắt buộc";
     if (!formData.email) errors.email = "Email là bắt buộc";
-    if (!formData.password) errors.password = "Mật khẩu là bắt buộc";
+    if (!user && !formData.password) errors.password = "Mật khẩu là bắt buộc";
     if (!formData.phone) errors.phone = "Số điện thoại là bắt buộc";
     if (!formData.address) errors.address = "Địa chỉ là bắt buộc";
-    if (formData.password.length < 6)
+    if (!user && formData.password.length < 6)
       errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
 
     if (formData.role === "Tenant") {
@@ -69,24 +69,6 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
       [name]: value,
     }));
   };
-  const fetchUsers = async () => {
-    try {
-      const token = JSON.parse(localStorage.getItem("auth"));
-      const headers = { Authorization: `Bearer ${token}` };
-
-      // Fetch users
-      const usersResponse = await axios.get(
-        "http://localhost:3000/users/tenant/combo",
-        {
-          headers,
-        }
-      );
-      setUsers(usersResponse.data.users || []);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Có lỗi xảy ra khi tải dữ liệu người dùng");
-    }
-  };
 
   const fetchRooms = async () => {
     try {
@@ -111,22 +93,79 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setError(errors);
-      return;
+    if (!user) {
+      const errors = validateForm();
+
+      if (Object.keys(errors).length > 0) {
+        setError(errors);
+        return;
+      }
+    } else {
+      if (!formData.name) {
+        setError({ name: "Họ và tên là bắt buộc" });
+        return;
+      }
+      if (!formData.phone) {
+        setError({ phone: "Số điện thoại là bắt buộc" });
+        return;
+      }
+      if (!formData.address) {
+        setError({ address: "Địa chỉ là bắt buộc" });
+        return;
+      }
     }
     onSubmit(formData);
   };
 
   useEffect(() => {
     if (isOpen) {
-      // Fetch users when modal opens
-      fetchUsers();
       fetchRooms();
-      // If in edit mode, populate form with contract data
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      setFormData({
+        name: user.name || "",
+        username: user.username || "",
+        email: user.email || "",
+        password: "", // Không điền lại mật khẩu khi sửa
+        phone: user.phone || "",
+        address: user.address || "",
+        role: user.role_id?.role_name || user.role || "Tenant",
+        age: user.age || "",
+        gender: user.gender || "Other",
+        room_id: user.room_id || "",
+        user_id: user._id || "",
+        start_date: user.start_date || "",
+        rental_period: user.rental_period || "",
+        rental_price: user.rental_price || "",
+        deposit: user.deposit || "",
+        description: user.description || "",
+      });
+      setError("");
+    } else if (isOpen && !user) {
+      setFormData({
+        name: "",
+        username: "",
+        email: "",
+        password: "",
+        phone: "",
+        address: "",
+        role: "Tenant",
+        age: "",
+        gender: "Other",
+        room_id: "",
+        user_id: "",
+        start_date: "",
+        rental_period: "",
+        rental_price: "",
+        deposit: "",
+        description: "",
+      });
+      setError("");
+    }
+  }, [isOpen, user]);
 
   if (!isOpen) return null;
 
@@ -134,7 +173,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Thêm Người Dùng Mới</h2>
+          <h2>{user ? "Cập nhật người dùng" : "Thêm Người Dùng Mới"}</h2>
           <button className="close-button" onClick={onClose}>
             &times;
           </button>
@@ -167,71 +206,70 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
             {error.name && <p className="error-message">{error.name}</p>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="username">Tên đăng nhập *</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-            />
-            {error.username && (
-              <p className="error-message">{error.username}</p>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email *</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {error.email && <p className="error-message">{error.email}</p>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Mật khẩu *</label>
-            <div
-              className="password-input"
-              style={{
-                alignItems: "center",
-              }}
-            >
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <FaEyeSlash
-                    style={{
-                      fontSize: 20,
-                    }}
-                  />
-                ) : (
-                  <FaEye
-                    style={{
-                      fontSize: 20,
-                    }}
-                  />
+          {!user && (
+            <>
+              <div className="form-group">
+                <label htmlFor="username">Tên đăng nhập *</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+                {error.username && (
+                  <p className="error-message">{error.username}</p>
                 )}
-              </button>
-            </div>
-            {error.password && (
-              <p className="error-message">{error.password}</p>
-            )}
-          </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {error.email && <p className="error-message">{error.email}</p>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">
+                  Mật khẩu{user ? " (Để trống nếu không đổi)" : " *"}
+                </label>
+                <div
+                  className="password-input"
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder={user ? "Để trống nếu không đổi mật khẩu" : ""}
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash style={{ fontSize: 20 }} />
+                    ) : (
+                      <FaEye style={{ fontSize: 20 }} />
+                    )}
+                  </button>
+                </div>
+                {error.password && (
+                  <p className="error-message">{error.password}</p>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="form-group">
             <label htmlFor="phone">Số điện thoại *</label>
@@ -284,22 +322,24 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
             {error.gender && <p className="error-message">{error.gender}</p>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role">Vai trò *</label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="Tenant">Người thuê</option>
-              <option value="Owner">Chủ trọ</option>
-            </select>
-            {error.role && <p className="error-message">{error.role}</p>}
-          </div>
+          {!user && (
+            <div className="form-group">
+              <label htmlFor="role">Vai trò *</label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="Tenant">Người thuê</option>
+                <option value="Owner">Chủ trọ</option>
+              </select>
+              {error.role && <p className="error-message">{error.role}</p>}
+            </div>
+          )}
 
-          {formData.role === "Tenant" && (
+          {formData.role === "Tenant" && !user && (
             <>
               <h3
                 style={{
@@ -419,13 +459,20 @@ const AddUserModal = ({ isOpen, onClose, onSubmit }) => {
               Hủy
             </button>
             <button type="submit" className="submit-button">
-              Thêm mới
+              {user ? "Cập nhật" : "Thêm mới"}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
+};
+
+AddUserModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  user: PropTypes.object,
 };
 
 export default AddUserModal;
